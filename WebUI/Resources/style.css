@@ -7,7 +7,7 @@
 
 body {
 	background-color: #2b2b2b;
-	color: white;
+	color: #e6e6e6e6;
 	font-size: 16px;
 	font-family: 'Avenir';
 	margin: 0px;
@@ -48,6 +48,22 @@ h1 {
 	border-bottom: 1px solid rgba(255, 255, 255, 0.09);
 	margin-bottom: 25px;
 	padding-bottom: 25px;
+}
+
+.footer {
+	overflow: hidden;
+	border-top: 1px solid rgba(255, 255, 255, 0.09);
+	margin-top: 15px;
+	padding-top: 15px;
+}
+
+.footer #source {
+	color: #9e9e9ee6;
+	margin-left: 75%;
+}
+
+.footer #source a {
+	color: #c5c5c5e6;
 }
 
 #media {
@@ -170,7 +186,7 @@ h1 {
 	background: rgba(255, 255, 255, 0.05);
 	border: none;
 	margin-top: 10px;
-	color: white;
+	color: #e6e6e6e6;
 	font-family: Avenir;
 	border-radius: 4px;
 }

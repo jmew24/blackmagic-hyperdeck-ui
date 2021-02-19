@@ -14,7 +14,8 @@ except ImportError:
 class WebUI:
     logger = logging.getLogger(__name__)
 
-    def __init__(self, port=None, loop=None):
+    def __init__(self, address=None, port=None, loop=None):
+        self.address = address or 'localhost'
         self.port = port or 8080
 
         self._loop = loop or asyncio.get_event_loop()
@@ -31,8 +32,8 @@ class WebUI:
         app.router.add_static('/resources/', path=str('./WebUI/Resources/'))
 
         self.logger.info(
-            "Starting web server on localhost:{}".format(self.port))
-        return await self._loop.create_server(app.make_handler(), "localhost", self.port)
+            "Starting web server on {}:{}".format(self.address, self.port))
+        return await self._loop.create_server(app.make_handler(), self.address, self.port)
 
     async def _http_request_get_frontend_html(self, request):
         return web.FileResponse(path=str('WebUI/WebUI.html'))

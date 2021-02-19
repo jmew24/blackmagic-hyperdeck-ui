@@ -9,12 +9,11 @@ import HyperDeck
 
 
 async def main(loop, args):
-    hyperdeck = HyperDeck.HyperDeck('192.168.21.64', 9993)
+    hyperdeck = HyperDeck.HyperDeck(args.hyperdeckIP, args.hyperdeckPort)
     await hyperdeck.connect()
 
-    webui = WebUI.WebUI()
+    webui = WebUI.WebUI(args.address, args.port)
     await webui.start(hyperdeck)
-
 
 if __name__ == "__main__":
     logging.basicConfig(
@@ -32,6 +31,14 @@ if __name__ == "__main__":
 
     # Parse command line arguments
     parser = argparse.ArgumentParser()
+    parser.add_argument('-a', '--address', type=str, nargs='?', default='localhost',
+                        help='The host to use for the web UI, default: localhost')
+    parser.add_argument('-p', '--port', type=int, nargs='?', default=8080,
+                        help="The port to use for the web UI, default: 8080")
+    parser.add_argument('-hdip', '--hyperdeckIP', type=str, nargs='?', default='192.168.21.64',
+                        help='The HyperDeck IP to connect to, default: 192.168.21.64')
+    parser.add_argument('-hdport', '--hyperdeckPort', type=int, nargs='?',
+                        default=9993, help='The HyperDeck Port to connect to, default: 9993')
     args = parser.parse_args()
 
     # Run the application with the user arguments

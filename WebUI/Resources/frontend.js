@@ -13,6 +13,8 @@ let loop = document.getElementById('loop');
 let single = document.getElementById('single');
 let speed = document.getElementById('speed');
 let speed_val = document.getElementById('speed_val');
+let live_div = document.getElementById('live');
+let jog_status = document.getElementById('jog_status');
 let jog = document.getElementById('jog');
 let jog_val = document.getElementById('jog_val');
 let state = document.getElementById('state');
@@ -35,12 +37,19 @@ let initialLoad = true;
 let videoFormat = '1080i5994';
 let fps = 59.94;
 let dropFrame = true;
-let tc = new Timecode(0, fps, dropFrame);
-let totalTC = new Timecode(0, fps, dropFrame);
-let clips_duration = [];
+let lastFrame = -1;
+let clipTC = {
+	starting: new Timecode(0, fps, dropFrame),
+	duration: new Timecode(0, fps, dropFrame),
+	ending: new Timecode(0, fps, dropFrame),
+	current: new Timecode(0, fps, dropFrame),
+};
+let clips_data = [];
 let is_playing = false;
+let is_updating = false;
+let auto_refresh = false;
 
-setDropFrame = (timecodeData = '00:00:00;00') => {
+const setDropFrame = (timecodeData = '00:00:00;00') => {
 	// Set NDF or DF
 	const parts = timecodeData.trim().match('^([012]\\d):(\\d\\d):(\\d\\d)(:|;|\\.)(\\d\\d)$');
 	if (parts) {
@@ -51,42 +60,89 @@ setDropFrame = (timecodeData = '00:00:00;00') => {
 	}
 };
 
+const updateTimecode = (frames = 0, overrideLastFrame = false) =>
+	new Promise((resolve, reject) => {
+		try {
+			// If we are updating, our frames are a negative number or there isn't a change since last frame, reject and ignore the update
+			if (is_updating || frames < 0 || (frames == lastFrame && !overrideLastFrame))
+				return reject({ error: false, data: { is_updating, frames, lastFrame } });
+			else is_updating = true;
+
+			const newValue = Timecode(Math.round(frames), fps, dropFrame);
+			clipTC.current = newValue;
+			jog.value = parseFloat(clipTC.current.valueOf()).toFixed(0);
+			jog_val.innerHTML = `${clipTC.current.toString()} / ${clipTC.duration.toString()}`;
+			lastFrame = frames;
+
+			is_updating = false;
+			return resolve(newValue);
+		} catch (err) {
+			return reject({ error: true, data: err });
+		}
+	});
+
+const resetJog = () => {
+	clipTC = {
+		starting: new Timecode(0, fps, dropFrame),
+		duration: new Timecode(0, fps, dropFrame),
+		ending: new Timecode(0, fps, dropFrame),
+		current: new Timecode(0, fps, dropFrame),
+	};
+	lastFrame = -1;
+	jog.step = fps;
+	jog.max = 0;
+	jog.value = 0.0;
+	return updateTimecode(Math.round(jog.value), true);
+};
+
+const disableElement = (elem, disable = true) => {
+	var nodes = elem.getElementsByTagName('*');
+	for (var i = 0; i < nodes.length; i++) {
+		nodes[i].disabled = disable;
+	}
+};
+
 // Bind HTML elements to HyperDeck commands
 speed.oninput = () => {
 	speed_val.innerHTML = parseFloat(speed.value).toFixed(2);
 };
 
 jog.oninput = () => {
-	if (clips.selectedIndex == null || clips.selectedIndex < 0) {
-		jog_val.innerHTML = '';
-		return;
-	}
-
-	// Update display and clip jog
-	tc = Timecode(Number(jog.value), fps, dropFrame);
-	jog_val.innerHTML = `${tc.toString()} / ${totalTC.toString()}`;
+	// Visually update the jog placement and text
+	updateTimecode(Math.round(jog.value)).catch(() => {});
 };
 
 jog.onchange = () => {
+	if (is_updating) return;
+	const curValue = Math.round(jog.value);
 	if (clips.selectedIndex == null || clips.selectedIndex < 0) {
 		jog_val.innerHTML = '';
-		jog.disabled = true;
+		disableElement(jog_status, true);
 		return;
 	} else {
-		jog.disabled = false;
+		disableElement(jog_status, false);
 	}
 
-	// Update display and clip jog
-	jog.oninput();
-
-	const command = {
-		command: 'clip_jog',
-		params: {
-			timecode: tc.toString(),
-		},
-	};
-
-	ws.send(JSON.stringify(command));
+	// Update display
+	try {
+		const curValueToTC = Timecode(curValue, fps, dropFrame);
+		updateTimecode(curValueToTC.frameCount, true)
+			.then((newTimecode) => {
+				const newValue = Timecode(newTimecode.toString(), fps, dropFrame);
+				const jogTC = Timecode(clipTC.starting, fps, dropFrame).add(newValue.frameCount);
+				// Update clip jog position
+				const command = {
+					command: 'clip_jog',
+					params: {
+						timecode: jogTC.toString(),
+					},
+				};
+				ws.send(JSON.stringify(command));
+			})
+			.catch((err) => {
+				console.error(err);
+			});
+	} catch {}
 };
 
 record.onclick = () => {
@@ -98,6 +154,9 @@ record.onclick = () => {
 	};
 
 	ws.send(JSON.stringify(command));
+	is_playing = false;
+	auto_refresh = true;
+	disableElement(live_div, true);
 };
 
 play.onclick = () => {
@@ -119,20 +178,17 @@ stop.onclick = () => {
 	};
 	ws.send(JSON.stringify(command));
 	is_playing = false;
+	disableElement(live_div, false);
 };
 
 prev.onclick = () => {
-	const command = {
-		command: 'clip_previous',
-	};
-	ws.send(JSON.stringify(command));
+	clips.selectedIndex--;
+	clips.onchange();
 };
 
 next.onclick = () => {
-	const command = {
-		command: 'clip_next',
-	};
-	ws.send(JSON.stringify(command));
+	clips.selectedIndex++;
+	clips.onchange();
 };
 
 state_refresh.onclick = () => {
@@ -147,24 +203,53 @@ state_refresh.onclick = () => {
 };
 
 clips.onchange = () => {
-	// First stop the current clip if one is playing
-	if (is_playing && clips.selectedIndex >= 0) stop.onclick();
+	if (clips.selectedIndex < 0) {
+		clips.selectedIndex = 0;
+	}
 
-	const command = {
-		command: 'clip_select',
-		params: {
-			id: clips.selectedIndex,
-		},
-	};
-	ws.send(JSON.stringify(command));
+	try {
+		const duration = clips_data[clips.selectedIndex].duration;
+		const starting = clips_data[clips.selectedIndex].timecode;
+		const durationTC = Timecode(duration, fps, dropFrame);
+		const startingTC = Timecode(starting, fps, dropFrame);
+		const endingTC = Timecode(startingTC, fps, dropFrame).add(duration);
 
-	// Lastly update the duration and jog settings
-	const duration = clips_duration[clips.selectedIndex];
-	setDropFrame(duration);
+		// First stop the current clip if one is playing
+		if (is_playing && clips.selectedIndex >= 0) stop.onclick();
+		lastFrame = -1;
 
-	totalTC = Timecode(duration, fps, dropFrame);
-	jog.max = parseFloat(totalTC.frameCount);
-	jog.value = 0.0;
+		const command = {
+			command: 'clip_select',
+			params: {
+				id: clips.selectedIndex,
+			},
+		};
+		ws.send(JSON.stringify(command));
+
+		// Lastly update the duration and jog settings
+		setDropFrame(duration);
+		clipTC = {
+			starting: startingTC,
+			ending: endingTC,
+			duration: durationTC,
+			current: Timecode(0, fps, dropFrame),
+		};
+		jog.max = parseFloat(durationTC.frameCount).toFixed(0);
+		jog.value = 0.0;
+		jog.oninput();
+	} catch {
+		// Ignore the jog updating as something went wrong
+		if (is_playing && clips.selectedIndex >= 0) stop.onclick();
+		lastFrame = -1;
+
+		const command = {
+			command: 'clip_select',
+			params: {
+				id: clips.selectedIndex,
+			},
+		};
+		ws.send(JSON.stringify(command));
+	}
 };
 
 clips_refresh.onclick = () => {
@@ -203,26 +288,19 @@ ws.onmessage = (message) => {
 
 	switch (data.response) {
 		case 'clip_count':
+			const lastIndex = clips.selectedIndex;
 			clips.innerHTML = '';
 
 			for (let i = 0; i < data.params['count']; i++) clips.add(new Option('[--:--:--:--] - Clip ' + i));
 
-			if (clips.length > 0) {
-				play.classList.remove('inactive');
-				stop.classList.remove('inactive');
-				prev.classList.remove('inactive');
-				next.classList.remove('inactive');
-			} else {
-				play.classList.add('inactive');
-				stop.classList.add('inactive');
-				prev.classList.add('inactive');
-				next.classList.add('inactive');
-			}
+			// If our last index is still valid, reassign it
+			if (clips.length > lastIndex) clips.selectedIndex = lastIndex;
+
 			break;
 
 		case 'clip_info':
 			clips.options[data.params['id'] - 1].text = '[' + data.params['duration'] + '] ' + data.params['name'];
-			clips_duration[data.params['id'] - 1] = data.params['duration'];
+			clips_data[data.params['id'] - 1] = data.params;
 
 			break;
 
@@ -234,41 +312,75 @@ ws.onmessage = (message) => {
 		case 'status':
 			const status = data.params['status'];
 			if (status !== undefined) {
-				const newTC = data.params['timecode'];
+				const paramsTC = data.params['timecode'];
 
-				setDropFrame(newTC);
-				state.innerHTML = status + ' [' + newTC + ']';
+				setDropFrame(paramsTC);
+				if (status === 'record') {
+					const paramsDisplayTC = data.params['display timecode'];
+					try {
+						const displayTimecode = Timecode(paramsDisplayTC, fps, dropFrame);
+						const newTimecode = Timecode(paramsTC, fps, dropFrame);
+						state.innerHTML = status + ' [' + displayTimecode.subtract(newTimecode).toString() + ']';
+					} catch {
+						state.innerHTML = status + ' [' + paramsDisplayTC + ']';
+					}
+				} else {
+					state.innerHTML = status + ' [' + paramsTC + ']';
+				}
 
-				if (status.indexOf('stopped') >= 0) is_playing = false;
-				else if (status.indexOf('play') >= 0 || status.indexOf('jog') >= 0) {
+				if (status.indexOf('stopped') >= 0 && is_playing) {
+					is_playing = false;
+					try {
+						const startingTimecode = Timecode(clipTC.starting.toString(), fps, dropFrame);
+						const newTimecode = Timecode(paramsTC, fps, dropFrame);
+						updateTimecode(newTimecode.subtract(startingTimecode).frameCount).catch(() => {});
+					} catch {}
+				} else if (status.indexOf('play') >= 0 || status.indexOf('jog') >= 0) {
 					is_playing = true;
-					jog.value = Timecode(newTC, fps, dropFrame);
-					jog.onchange();
+					disableElement(jog_status, false);
+					try {
+						const startingTimecode = Timecode(clipTC.starting.toString(), fps, dropFrame);
+						const newTimecode = Timecode(paramsTC, fps, dropFrame);
+						updateTimecode(newTimecode.subtract(startingTimecode).frameCount).catch(() => {});
+					} catch {}
 				}
 			} else state.innerHTML = 'Unknown';
 
 			switch (status) {
 				case undefined:
-					play.classList.remove('inactive');
-					stop.classList.remove('inactive');
-					prev.classList.remove('inactive');
-					next.classList.remove('inactive');
+					jog_status.classList.add('inactive');
+
+					break;
+				case 'record':
+					jog_status.classList.add('inactive');
 
 					break;
 
 				case 'stopped':
-					play.classList.remove('inactive');
-					stop.classList.add('inactive');
-					prev.classList.remove('inactive');
-					next.classList.remove('inactive');
+					jog_status.classList.remove('inactive');
+
+					break;
+
+				case 'preview':
+					// If auto refresh is on, set it false refresh the clips and set the index to our newest clip
+					if (auto_refresh) {
+						auto_refresh = false;
+						clips_refresh.onclick();
+						setTimeout(() => {
+							clips.selectedIndex = clips.length - 1;
+						}, 500);
+					}
+
+					break;
+
+				case 'play':
+				case 'jog':
+					jog_status.classList.remove('inactive');
 
 					break;
 
 				default:
-					play.classList.add('inactive');
-					stop.classList.remove('inactive');
-					prev.classList.remove('inactive');
-					next.classList.remove('inactive');
+					jog_status.classList.add('inactive');
 
 					break;
 			}
@@ -326,7 +438,5 @@ window.onkeyup = (ev) => {
 window.onload = () => {
 	speed.value = 1.0;
 	speed.oninput();
-	jog.step = fps;
-	jog.value = 0.0;
-	jog.onchange();
+	resetJog();
 };

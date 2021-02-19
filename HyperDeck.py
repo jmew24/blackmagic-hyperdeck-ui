@@ -5,8 +5,8 @@ import logging
 class HyperDeck:
     logger = logging.getLogger(__name__)
 
-    def __init__(self, host, port=None, loop=None):
-        self.host = host
+    def __init__(self, host=None, port=None, loop=None):
+        self.host = host or '192.168.21.64'
         self.port = port or 9993
         self.clips = []
         self.status = dict()
