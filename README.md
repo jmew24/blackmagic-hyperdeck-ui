@@ -2,10 +2,10 @@
 
 1. Connect a Blackmagic Design HyperDeck to your computer, via an Ethernet cable.
 2. Run `python3 Main.py` (`py Main.py` on Windows) from your command line/terminal application.
-   (Optional Arguments: You can manually set the web ip, port, hyperdeck ip and hypderdeck port by using the corresponding arguments on launch. To view all arguments and defaults, type `--help` at the end of the Run command in Part 2)
+> (Optional Arguments: You can manually set the web ip, port, hyperdeck ip and hypderdeck port by using the corresponding arguments on launch. To view all arguments and defaults, type `--help` at the end of the Run command in Part 2)
 3. Open `127.0.0.1:8080` in your chosen web browser to show the Web UI. (Or specified custom ip and port)
 
-# Example:
+## Example:
 
 Running `python3 Main.py -a localhost -p 8080 -hdip 192.168.21.64 -hdport 9993` will start the Blackmagic HyperDeck UI webserver on localhost:8080 and will connect to a HyperDeck at 192.168.21.64:9993
 
