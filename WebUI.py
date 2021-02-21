@@ -34,7 +34,7 @@ class WebUI:
         self._app = app
 
         self.logger.info(
-            "[web] Starting web server on {}:{}".format(self.address, self.port))
+            "Starting web server on {}:{}".format(self.address, self.port))
         return await self._loop.create_server(app.make_handler(), self.address, self.port)
 
     async def _http_request_get_frontend_html(self, request: web.Request):
@@ -43,28 +43,34 @@ class WebUI:
     async def _http_request_get_websocket(self, request: web.Request):
         resp = web.WebSocketResponse()
         await resp.prepare(request)
+
         if self._hyperdeck.hasCallback() == False:
             await self._hyperdeck.set_callback(self._hyperdeck_event)
-            self.logger.debug("[hyperdeck] Set HyperDeck callback.")
+            self.logger.debug("Set HyperDeck callback.")
 
         try:
-            self.logger.debug("[ws] New Websocket Connection.")
+            self.logger.debug(
+                "({}) Websocket Connection Opened.".format(request.host))
             self._app["sockets"].append(resp)
 
             async for msg in resp:
                 if msg.type == web.WSMsgType.TEXT:
                     request = json.JSONDecoder().decode(msg.data)
                     self.logger.debug(
-                        "[ws] Front-end request: {}".format(request))
+                        "Request: {}".format(request))
 
                     try:
-                        request.set('_ws', resp)
+                        request['_ws'] = resp
                         await self._websocket_request_handler(request)
                     except Exception as e:
                         logging.error(e)
+                elif msg.type == web.WSMsgType.CLOSED:
+                    self.logger.debug(
+                        "({}) Websocket connection closed.{}".format(request.host))
                 elif msg.type == web.WSMsgType.ERROR:
-                    logging.error(
-                        '[ws] Websocket connection closed with exception {}'.format(resp.exception()))
+                    self._app["sockets"].remove(resp)
+                    self.logger.debug(
+                        "Websocket connection closed with exception: {}".format(resp.exception()))
 
                 else:
                     return resp
@@ -72,7 +78,8 @@ class WebUI:
 
         finally:
             self._app["sockets"].remove(resp)
-            self.logger.debug("[ws] Closed Websocket Connection.")
+            self.logger.debug(
+                "({}) Websocket Connection Closed.".format(request.host))
 
     async def _websocket_request_handler(self, request: web.Request):
         ws = request.get('_ws', None)
@@ -133,12 +140,12 @@ class WebUI:
             # Make sure the app is set
             if self._app is None:
                 self.logger.debug(
-                    "[ws] _send_websocket_message error: no app found!")
+                    "_send_websocket_message error: no app found!")
                 return None
 
         # Encode the message as a JSON message
         message_json = json.JSONEncoder().encode(message)
-        self.logger.debug("[ws] Front-end response: {}".format(message_json))
+        self.logger.debug("Response: {}".format(message_json))
 
         if socket is None:
             # Loop through all sockets and if they exist and are connected, send them the message
