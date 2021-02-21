@@ -64,7 +64,7 @@ class WebUI:
                         logging.error(e)
                 elif msg.type == web.WSMsgType.ERROR:
                     logging.error(
-                        '[ws] Websocket connection closed with exception {}'.format(ws.exception()))
+                        '[ws] Websocket connection closed with exception {}'.format(resp.exception()))
 
                 else:
                     return resp
