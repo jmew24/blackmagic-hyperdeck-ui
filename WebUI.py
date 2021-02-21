@@ -20,47 +20,62 @@ class WebUI:
 
         self._loop = loop or asyncio.get_event_loop()
         self._hyperdeck = None
-        self._websocket = None
+        self._app = None
 
     async def start(self, hyperdeck):
         self._hyperdeck = hyperdeck
 
         # Add routes for the static front-end HTML file, the websocket, and the resources directory.
         app = web.Application()
+        app["sockets"] = []
         app.router.add_get('/', self._http_request_get_frontend_html)
         app.router.add_get('/ws', self._http_request_get_websocket)
         app.router.add_static('/resources/', path=str('./WebUI/Resources/'))
+        self._app = app
 
         self.logger.info(
-            "Starting web server on {}:{}".format(self.address, self.port))
+            "[web] Starting web server on {}:{}".format(self.address, self.port))
         return await self._loop.create_server(app.make_handler(), self.address, self.port)
 
-    async def _http_request_get_frontend_html(self, request):
+    async def _http_request_get_frontend_html(self, request: web.Request):
         return web.FileResponse(path=str('WebUI/WebUI.html'))
 
-    async def _http_request_get_websocket(self, request):
-        ws = web.WebSocketResponse()
-        await ws.prepare(request)
+    async def _http_request_get_websocket(self, request: web.Request):
+        resp = web.WebSocketResponse()
+        await resp.prepare(request)
+        if self._hyperdeck.hasCallback() == False:
+            await self._hyperdeck.set_callback(self._hyperdeck_event)
+            self.logger.debug("[hyperdeck] Set HyperDeck callback.")
 
-        self._websocket = ws
-        await self._hyperdeck.set_callback(self._hyperdeck_event)
+        try:
+            self.logger.debug("[ws] New Websocket Connection.")
+            self._app["sockets"].append(resp)
 
-        async for msg in ws:
-            if msg.type == aiohttp.WSMsgType.TEXT:
-                request = json.JSONDecoder().decode(msg.data)
-                self.logger.debug("Front-end request: {}".format(request))
+            async for msg in resp:
+                if msg.type == web.WSMsgType.TEXT:
+                    request = json.JSONDecoder().decode(msg.data)
+                    self.logger.debug(
+                        "[ws] Front-end request: {}".format(request))
 
-                try:
-                    await self._websocket_request_handler(request)
-                except Exception as e:
-                    logging.error(e)
-            elif msg.type == aiohttp.WSMsgType.ERROR:
-                logging.error(
-                    'Websocket connection closed with exception {}'.format(ws.exception()))
+                    try:
+                        request.set('_ws', resp)
+                        await self._websocket_request_handler(request)
+                    except Exception as e:
+                        logging.error(e)
+                elif msg.type == web.WSMsgType.ERROR:
+                    logging.error(
+                        '[ws] Websocket connection closed with exception {}'.format(ws.exception()))
 
-        return ws
+                else:
+                    return resp
+            return resp
 
-    async def _websocket_request_handler(self, request):
+        finally:
+            self._app["sockets"].remove(resp)
+            self.logger.debug("[ws] Closed Websocket Connection.")
+
+    async def _websocket_request_handler(self, request: web.Request):
+        ws = request.get('_ws', None)
         command = request.get('command')
         params = request.get('params', dict())
 
@@ -76,7 +91,7 @@ class WebUI:
                     'port': self._hyperdeck.getPort(),
                 }
             }
-            await self._send_websocket_message(message)
+            await self._send_websocket_message(message, ws)
         if command == "updateNetwork":
             oldHost = self._hyperdeck.getHost()
             oldPort = self._hyperdeck.getPort()
@@ -113,15 +128,31 @@ class WebUI:
             timecode = params.get('timecode', '00:00:00;00')
             await self._hyperdeck.jog_to_timecode(timecode)
 
-    async def _send_websocket_message(self, message):
-        if self._websocket is None or self._websocket.closed:
-            return None
+    async def _send_websocket_message(self, message, socket=None):
+        if socket is None:
+            # Make sure the app is set
+            if self._app is None:
+                self.logger.debug(
+                    "[ws] _send_websocket_message error: no app found!")
+                return None
 
+        # Encode the message as a JSON message
         message_json = json.JSONEncoder().encode(message)
+        self.logger.debug("[ws] Front-end response: {}".format(message_json))
 
-        self.logger.debug("Front-end response: {}".format(message_json))
-        response = await self._websocket.send_str(message_json)
-        return response
+        if socket is None:
+            # Loop through all sockets and if they exist and are connected, send them the message
+            for ws in self._app["sockets"]:
+                if ws is None or ws.closed:
+                    return None
+                else:
+                    response = await ws.send_str(message_json)
+            if response is not None:
+                return response
+            else:
+                return ""
+        else:
+            response = await socket.send_str(message_json)
 
     async def _hyperdeck_event(self, event, params=None):
         # HyperDeck state change event handlers, one per supported event type.
