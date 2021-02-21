@@ -29,7 +29,7 @@ let next = document.getElementById('next');
 let sent = document.getElementById('sent');
 let received = document.getElementById('received');
 let clips_name = document.getElementById('clips_name');
-let connect = document.getElementById('connect');
+//let connect = document.getElementById('connect');
 let ip_addr = document.getElementById('ip_addr');
 let port = document.getElementById('port');
 
@@ -259,6 +259,7 @@ clips_refresh.onclick = () => {
 	ws.send(JSON.stringify(command));
 };
 
+/*
 connect.onclick = () => {
 	const command = {
 		command: 'updateNetwork',
@@ -269,6 +270,7 @@ connect.onclick = () => {
 	};
 	ws.send(JSON.stringify(command));
 };
+*/
 
 ws.onopen = () => {
 	const command = {
