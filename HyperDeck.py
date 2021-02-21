@@ -22,6 +22,9 @@ class HyperDeck:
     def getPort(self):
         return self.port
 
+    def hasCallback(self):
+        return False if self._callback is None else True
+
     async def setNetwork(self, host=None, port=None):
         # Update the host and/or port and re-connect to the HyperDeck
         if host == None or port == None:
@@ -41,11 +44,12 @@ class HyperDeck:
         self._callback = callback
 
     async def connect(self):
-        self.logger.info('Connecting to {}:{}...'.format(self.host, self.port))
+        self.logger.info(
+            '[hyperdeck] Connecting to {}:{}...'.format(self.host, self.port))
 
         try:
             self._transport = await asyncio.open_connection(host=self.host, port=self.port, loop=self._loop)
-            self.logger.info('Connection established.')
+            self.logger.info('[hyperdeck] Connection established.')
 
             # Set up a worker task to receive and parse responses from the
             # Hyperdeck:
@@ -55,7 +59,7 @@ class HyperDeck:
             # we can keep track of what it is currently doing:
             self._loop.create_task(self._poll_state())
         except Exception as e:
-            self.logger.error("Failed to connect: {}".format(e))
+            self.logger.error("[hyperdeck] Failed to connect: {}".format(e))
             return None
 
         # Refresh our internal caches of the current HyperDeck state.
@@ -210,7 +214,8 @@ class HyperDeck:
                 if len(response_lines) == 0:
                     continue
             except Exception as e:
-                self.logger.error("Connection failed: {}".format(e))
+                self.logger.error(
+                    "[hyperdeck] Connection failed: {}".format(e))
                 return
 
             try:
@@ -218,7 +223,8 @@ class HyperDeck:
                 # from the HyperDeck. Abort if we receive a malformed response.
                 response_code = int(response_lines[0].split(' ', 1)[0])
             except Exception as e:
-                self.logger.error("Malformed response: {}".format(e))
+                self.logger.error(
+                    "[hyperdeck] Malformed response: {}".format(e))
                 return
 
             # Special ranges of response codes indicates errors, or asynchronous
@@ -252,7 +258,7 @@ class HyperDeck:
                 self._response_future = None
 
     async def _send(self, data):
-        self.logger.debug('Sent: {}'.format([data]))
+        self.logger.debug('[hyperdeck] Sent: {}'.format([data]))
 
         data += '\r\n'
         return self._transport[1].write(data.encode('utf-8'))
@@ -281,5 +287,5 @@ class HyperDeck:
 
                 lines.append(line)
 
-        self.logger.debug('Received: {}'.format(lines))
+        self.logger.debug('[hyperdeck] Received: {}'.format(lines))
         return lines
