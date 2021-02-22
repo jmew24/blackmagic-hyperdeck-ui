@@ -126,6 +126,7 @@ class WebUI:
                     'user_name': params.get('user_name'),
                 }
             }
+            self.logger.debug("Login Status: {}".format(message))
             await self._send_websocket_message(message, ws)
         elif command == "getNetwork":
             message = {
