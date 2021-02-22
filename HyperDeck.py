@@ -16,7 +16,7 @@ class HyperDeck:
         self._callback = None
         self._response_future = None
         self._socketCount = 0
-        self._statusCount = 0
+        self._statusCount = 3600
 
     def connectedSockets(self, count=0):
         if count is not None and (type(count) == int or type(count) == float):
