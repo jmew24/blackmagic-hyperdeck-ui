@@ -64,7 +64,9 @@ class WebUI:
                         request['_ws'] = resp
                         await self._websocket_request_handler(request)
                     except Exception as e:
-                        logging.error(e)
+                        self.logger.error(
+                            "_http_request_get_websocket _websocket_request_handler failed: {}".format(e))
+                            
                 elif msg.type == web.WSMsgType.CLOSED:
                     self.logger.debug(
                         "({}) Websocket connection closed.{}".format(request.host))
@@ -163,7 +165,8 @@ class WebUI:
             else:
                 response = await socket.send_str(message_json)
         except Exception as e:
-            logging.error(e)
+            self.logger.error(
+                "_send_websocket_message failed: {}".format(e))
         finally:
             if response is not None:
                 return response
