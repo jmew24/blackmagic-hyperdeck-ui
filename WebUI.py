@@ -78,8 +78,7 @@ class WebUI:
 
         finally:
             self._app["sockets"].remove(resp)
-            self.logger.debug(
-                "({}) Websocket Connection Closed.".format(request.host))
+            self.logger.debug("Websocket Connection Closed.")
 
     async def _websocket_request_handler(self, request: web.Request):
         ws = request.get('_ws', None)
