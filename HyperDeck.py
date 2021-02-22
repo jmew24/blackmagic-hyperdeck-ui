@@ -17,6 +17,11 @@ class HyperDeck:
         self._response_future = None
         self._socketCount = 0;
 
+    def connectedSockets(self, count=0):
+        if count is not None and (type(count) == int or type(count) == float):
+            self._socketCount = count;
+        return self._socketCount
+
     def getHost(self):
         return self.host
 
@@ -171,11 +176,6 @@ class HyperDeck:
             slot, remote, config).lower()
         response = await self._send_command(command)
         return not response['error']
-
-    async def connectedSockets(self, count=0):
-        if count is not None and (type(count) == int or type(count) == float):
-            self._socketCount = count;
-        return self._socketCount;
 
     async def _send_command(self, command):
         if not self._transport:

@@ -66,7 +66,7 @@ class WebUI:
                     except Exception as e:
                         self.logger.error(
                             "_http_request_get_websocket _websocket_request_handler failed: {}".format(e))
-                            
+
                 elif msg.type == web.WSMsgType.CLOSED:
                     self.logger.debug(
                         "({}) Websocket connection closed.{}".format(request.host))
