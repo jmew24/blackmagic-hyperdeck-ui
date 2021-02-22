@@ -145,20 +145,27 @@ class WebUI:
         # Encode the message as a JSON message
         message_json = json.JSONEncoder().encode(message)
         self.logger.debug("Response: {}".format(message_json))
+        # First define our response variable
+        response = None
 
-        if socket is None:
-            # Loop through all sockets and if they exist and are connected, send them the message
-            for ws in self._app["sockets"]:
-                if ws is None or ws.closed:
-                    return None
-                else:
-                    response = await ws.send_str(message_json)
+        try:
+            if socket is None:
+                # Loop through all sockets and if they exist and are connected, send them the message
+                for ws in self._app["sockets"]:
+                    if ws is None or ws.closed:
+                        return None
+                    else:
+                        response = await ws.send_str(message_json)
+            else:
+                response = await socket.send_str(message_json)
+        except Exception as e:
+            logging.error(e)
+        finally:
             if response is not None:
                 return response
             else:
                 return ""
-        else:
-            response = await socket.send_str(message_json)
+        
 
     async def _hyperdeck_event(self, event, params=None):
         # HyperDeck state change event handlers, one per supported event type.
