@@ -15,7 +15,8 @@ class HyperDeck:
         self._transport = None
         self._callback = None
         self._response_future = None
-        self._socketCount = 0;
+        self._socketCount = 0
+        self._statusCount = 0
 
     def connectedSockets(self, count=0):
         if count is not None and (type(count) == int or type(count) == float):
@@ -209,9 +210,12 @@ class HyperDeck:
                 # bombarding it with continuous updates.
                 await asyncio.sleep(1)
 
-                # Only send a new update if we have at least one socket connected
-                if self._socketCount > 0:
+                # Only send a new update if we have at least one socket connected or its been an hour
+                if self._socketCount > 0 or self._statusCount >= 3600:
+                    self._statusCount = 0
                     await self.update_status()
+                else:
+                    self._statusCount = self._statusCount + 1;
             except Exception as e:
                 self.logger.error(
                     "_poll_state failed: {}".format(e))
