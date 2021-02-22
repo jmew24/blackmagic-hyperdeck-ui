@@ -1,6 +1,7 @@
 import asyncio
 import logging
 
+status_timeout = 3600
 
 class HyperDeck:
     logger = logging.getLogger(__name__)
@@ -16,7 +17,7 @@ class HyperDeck:
         self._callback = None
         self._response_future = None
         self._socketCount = 0
-        self._statusCount = 3600
+        self._statusCount = status_timeout
 
     def connectedSockets(self, count=0):
         if count is not None and (type(count) == int or type(count) == float):
@@ -211,7 +212,7 @@ class HyperDeck:
                 await asyncio.sleep(1)
 
                 # Only send a new update if we have at least one socket connected or its been an hour
-                if self._socketCount > 0 or self._statusCount >= 3600:
+                if self._socketCount > 0 or self._statusCount >= status_timeout:
                     self._statusCount = 0
                     await self.update_status()
                 else:
