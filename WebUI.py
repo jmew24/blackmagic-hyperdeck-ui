@@ -10,6 +10,27 @@ except ImportError:
     import sys
     sys.exit(1)
 
+class WebLogin:
+    logger = logging.getLogger(__name__)
+
+    def __init__(self):
+        self._accounts = [{
+            "user": "brtf",
+            "password": "brtfuser",
+        }]
+
+    async def validate(self, userName=None, password=None):
+        is_valid = False
+
+        if userName == None and password == None:
+            return False
+        
+        for account in self._accounts:
+            if account["user"] == userName and account["password"] == password:
+                is_valid = True
+                break
+
+        return is_valid
 
 class WebUI:
     logger = logging.getLogger(__name__)
@@ -18,6 +39,7 @@ class WebUI:
         self.address = address or 'localhost'
         self.port = port or 8080
 
+        self._webLogin = WebLogin()
         self._loop = loop or asyncio.get_event_loop()
         self._hyperdeck = None
         self._app = None
@@ -95,6 +117,16 @@ class WebUI:
         if command == "refresh":
             await self._hyperdeck_event('clips')
             await self._hyperdeck_event('status')
+        elif command == 'login':
+            valid_login = await self._webLogin.validate(userName=params.get('user_name'), password=params.get('password'));
+            message = {
+                'response': 'login_status',
+                'params': {
+                    'status': valid_login,
+                    'user_name': params.get('user_name'),
+                }
+            }
+            await self._send_websocket_message(message, ws)
         elif command == "getNetwork":
             message = {
                 'response': 'network',
