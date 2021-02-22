@@ -52,6 +52,7 @@ class WebUI:
             self.logger.debug(
                 "({}) Websocket Connection Opened.".format(request.host))
             self._app["sockets"].append(resp)
+            self._hyperdeck.connectedSockets(len(self._app["sockets"]));
 
             async for msg in resp:
                 if msg.type == web.WSMsgType.TEXT:
@@ -67,8 +68,10 @@ class WebUI:
                 elif msg.type == web.WSMsgType.CLOSED:
                     self.logger.debug(
                         "({}) Websocket connection closed.{}".format(request.host))
+                    self._hyperdeck.connectedSockets(len(self._app["sockets"]));
                 elif msg.type == web.WSMsgType.ERROR:
                     self._app["sockets"].remove(resp)
+                    self._hyperdeck.connectedSockets(len(self._app["sockets"]));
                     self.logger.debug(
                         "Websocket connection closed with exception: {}".format(resp.exception()))
 
@@ -78,6 +81,7 @@ class WebUI:
 
         finally:
             self._app["sockets"].remove(resp)
+            self._hyperdeck.connectedSockets(len(self._app["sockets"]));
             self.logger.debug("Websocket Connection Closed.")
 
     async def _websocket_request_handler(self, request: web.Request):

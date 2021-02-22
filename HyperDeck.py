@@ -15,6 +15,7 @@ class HyperDeck:
         self._transport = None
         self._callback = None
         self._response_future = None
+        self._socketCount = 0;
 
     def getHost(self):
         return self.host
@@ -171,6 +172,11 @@ class HyperDeck:
         response = await self._send_command(command)
         return not response['error']
 
+    async def connectedSockets(self, count=0):
+        if count is not None and (type(count) == int or type(count) == float):
+            self._socketCount = count;
+        return self._socketCount;
+
     async def _send_command(self, command):
         if not self._transport:
             return None
@@ -198,11 +204,18 @@ class HyperDeck:
 
     async def _poll_state(self):
         while True:
-            # We have to periodically poll the HyperDeck's state, rather than
-            # bombarding it with continuous updates.
-            await asyncio.sleep(1)
+            try:
+                # We have to periodically poll the HyperDeck's state, rather than
+                # bombarding it with continuous updates.
+                await asyncio.sleep(1)
 
-            await self.update_status()
+                # Only send a new update if we have at least one socket connected
+                if self._socketCount > 0:
+                    await self.update_status()
+            except Exception as e:
+                self.logger.error(
+                    "_poll_state failed: {}".format(e))
+                return
 
     async def _parse_responses(self):
         while True:
