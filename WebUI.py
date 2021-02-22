@@ -14,18 +14,31 @@ class WebLogin:
     logger = logging.getLogger(__name__)
 
     def __init__(self):
-        self._accounts = [{
-            "user": "brtf",
-            "password": "brtfuser",
-        }]
+        self._accounts = []
+
+        try:
+            # read file
+            with open('login.json', 'r') as loginFile:
+                data = loginFile.read()
+
+            # parse file
+            obj = json.loads(data)
+            self._accounts = obj['accounts']
+        except Exception as e:
+            self.logger.error("WebLogin __init__: {}".format(e))
 
     async def validate(self, userName=None, password=None):
         is_valid = False
 
+        # If we have no accounts, auto validate all requests
+        if len(self._accounts) == 0: return True
+
+        # If no username or password is given auto reject
         if userName == None and password == None:
             return False
         
         for account in self._accounts:
+            self.logger.info("account {}".format(account))
             if account["user"] == userName and account["password"] == password:
                 is_valid = True
                 break
