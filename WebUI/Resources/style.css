@@ -189,6 +189,7 @@ h1 {
   color: #e6e6e6e6;
   font-family: Avenir;
   border-radius: 4px;
+  width: 800%;
 }
 
 #container select:focus {
@@ -198,6 +199,7 @@ h1 {
 #container select option {
   padding: 12px 20px;
   font-size: 16px;
+  background: rgba(255, 255, 255, 0.03);
 }
 
 #container select option:nth-child(even) {
