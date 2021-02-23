@@ -1,3 +1,6 @@
 {
-  "accounts": []
+  "accounts": [{
+    "user": "brtf",
+    "password": "brtfuser"
+  }]
 }

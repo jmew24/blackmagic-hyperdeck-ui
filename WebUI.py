@@ -10,6 +10,7 @@ except ImportError:
     import sys
     sys.exit(1)
 
+
 class WebLogin:
     logger = logging.getLogger(__name__)
 
@@ -31,19 +32,20 @@ class WebLogin:
         is_valid = False
 
         # If we have no accounts, auto validate all requests
-        if len(self._accounts) == 0: return True
+        if len(self._accounts) <= 0:
+            return True
 
         # If no username or password is given auto reject
         if userName == None and password == None:
             return False
-        
+
         for account in self._accounts:
-            self.logger.info("account {}".format(account))
             if account["user"] == userName and account["password"] == password:
                 is_valid = True
                 break
 
         return is_valid
+
 
 class WebUI:
     logger = logging.getLogger(__name__)
@@ -63,7 +65,9 @@ class WebUI:
         # Add routes for the static front-end HTML file, the websocket, and the resources directory.
         app = web.Application()
         app["sockets"] = []
-        app.router.add_get('/', self._http_request_get_frontend_html)
+        app.router.add_get('/', self._http_request_get_controller_html)
+        app.router.add_get(
+            '/login', self._http_request_get_login_html)
         app.router.add_get('/ws', self._http_request_get_websocket)
         app.router.add_static('/resources/', path=str('./WebUI/Resources/'))
         self._app = app
@@ -72,8 +76,11 @@ class WebUI:
             "Starting web server on {}:{}".format(self.address, self.port))
         return await self._loop.create_server(app.make_handler(), self.address, self.port)
 
-    async def _http_request_get_frontend_html(self, request: web.Request):
-        return web.FileResponse(path=str('WebUI/WebUI.html'))
+    async def _http_request_get_controller_html(self, request: web.Request):
+        return web.FileResponse(path=str('WebUI/controller.html'))
+
+    async def _http_request_get_login_html(self, request: web.Request):
+        return web.FileResponse(path=str('WebUI/login.html'))
 
     async def _http_request_get_websocket(self, request: web.Request):
         resp = web.WebSocketResponse()
@@ -85,9 +92,15 @@ class WebUI:
 
         try:
             self.logger.debug(
-                "({}) Websocket Connection Opened.".format(request.host))
-            self._app["sockets"].append(resp)
-            self._hyperdeck.connectedSockets(len(self._app["sockets"]));
+                "({}) Websocket Connection Opened.".format(len(self._app["sockets"])))
+
+            message = {
+                'response': 'connected',
+                'params': {
+                    'connections': len(self._app["sockets"]),
+                }
+            }
+            await self._send_websocket_message(message, resp)
 
             async for msg in resp:
                 if msg.type == web.WSMsgType.TEXT:
@@ -104,11 +117,12 @@ class WebUI:
 
                 elif msg.type == web.WSMsgType.CLOSED:
                     self.logger.debug(
-                        "({}) Websocket connection closed.{}".format(request.host))
-                    self._hyperdeck.connectedSockets(len(self._app["sockets"]));
+                        "({}) Websocket connection closed.{}".format(len(self._app["sockets"]), request.host))
+                    self._hyperdeck.connectedSockets(len(self._app["sockets"]))
                 elif msg.type == web.WSMsgType.ERROR:
-                    self._app["sockets"].remove(resp)
-                    self._hyperdeck.connectedSockets(len(self._app["sockets"]));
+                    if resp in self._app["sockets"]:
+                        self._app["sockets"].remove(resp)
+                    self._hyperdeck.connectedSockets(len(self._app["sockets"]))
                     self.logger.debug(
                         "Websocket connection closed with exception: {}".format(resp.exception()))
 
@@ -117,9 +131,11 @@ class WebUI:
             return resp
 
         finally:
-            self._app["sockets"].remove(resp)
-            self._hyperdeck.connectedSockets(len(self._app["sockets"]));
-            self.logger.debug("Websocket Connection Closed.")
+            if resp in self._app["sockets"]:
+                self._app["sockets"].remove(resp)
+            self._hyperdeck.connectedSockets(len(self._app["sockets"]))
+            self.logger.debug("({}) Websocket Connection Closed.".format(
+                len(self._app["sockets"])))
 
     async def _websocket_request_handler(self, request: web.Request):
         ws = request.get('_ws', None)
@@ -131,7 +147,7 @@ class WebUI:
             await self._hyperdeck_event('clips')
             await self._hyperdeck_event('status')
         elif command == 'login':
-            valid_login = await self._webLogin.validate(userName=params.get('user_name'), password=params.get('password'));
+            valid_login = await self._webLogin.validate(userName=params.get('user_name'), password=params.get('password'))
             message = {
                 'response': 'login_status',
                 'params': {
@@ -139,7 +155,18 @@ class WebUI:
                     'user_name': params.get('user_name'),
                 }
             }
-            self.logger.info("Login Status: {}".format(message))
+            await self._send_websocket_message(message, ws)
+        elif command == 'controller':
+            self._app["sockets"].append(ws)
+            self._hyperdeck.connectedSockets(len(self._app["sockets"]))
+
+            message = {
+                'response': 'controller_load',
+                'params': {
+                    'host': self._hyperdeck.getHost(),
+                    'port': self._hyperdeck.getPort(),
+                }
+            }
             await self._send_websocket_message(message, ws)
         elif command == "getNetwork":
             message = {
@@ -218,7 +245,6 @@ class WebUI:
                 return response
             else:
                 return ""
-        
 
     async def _hyperdeck_event(self, event, params=None):
         # HyperDeck state change event handlers, one per supported event type.
