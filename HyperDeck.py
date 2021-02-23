@@ -124,6 +124,21 @@ class HyperDeck:
         response = await self._send_command(command)
         return response and not response['error']
 
+    async def slot_info(self):
+        command = 'slot info'
+        response = await self._send_command(command)
+        return response and not response['error']
+
+    async def slot_select(self, slot=1):
+        if slot < 1:
+            slot = 1;
+        elif slot > 2:
+            slot = 2;
+        command = 'slot select: slot id:: {}'.format(slot)
+        response = await self._send_command(command)
+        return response and not response['error']
+
+
     async def update_clips(self):
         command = 'clips get'
         response = await self._send_command(command)

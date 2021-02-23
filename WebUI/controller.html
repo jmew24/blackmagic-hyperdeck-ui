@@ -17,20 +17,16 @@
           <div class="header">
             <div id="playback">
               <label><input type="checkbox" id="loop" />Loop</label>
-              <label
-                ><input type="checkbox" id="single" checked="true" />Single
-                Clip</label
-              >
-              <label
-                ><input
+              <label><input type="checkbox" id="single" checked="true" />Single
+                Clip</label>
+              <label><input
                   type="range"
                   min="-16"
                   max="16"
                   step="0.25"
                   value="1.0"
                   class="slider"
-                  id="speed" /><span>Speed </span><span id="speed_val"></span
-              ></label>
+                  id="speed" /><span>Speed </span><span id="speed_val"></span></label>
             </div>
             <div id="transport">
               <button id="record"></button>
@@ -63,60 +59,60 @@
                   value="0.0"
                   class="slider"
                   id="jog"
-                />
+                  />
                 <span id="jog_val"></span>
               </label>
             </div>
             <div id="media">
-              <label
-                >Clips Name:
-                <input
-                  type="text"
-                  id="clips_name"
-                  name="clips_name"
-                  value="Capture"
-                />
+              <Label>Slot:
+                <select id="select_slot"">
+                  <option> Recording Slot </option>
+                  <option value=1> 1 </option>
+                  <option value=2> 2 </option>
+                </select>
+                <label>Clips Name:
+                  <input
+                    type="text"
+                    id="clips_name"
+                    name="clips_name"
+                    value="Capture"
+                    />
+                </label>
+                <br />
+                <label>Clips:
+                  <select id="clips" size="16"></select>
+                </label>
+                <button id="clips_refresh" class="reset"></button>
+              </div>
+            </div>
+          </div>
+          <div id="info">
+            <span>
+              <label>IP Address:
+                <input type="text" id="ip_addr" name="ip_addr" disabled />
               </label>
-              <br />
-              <label
-                >Clips:
-                <select id="clips" size="16"></select>
+              <label>Port:
+                <input type="number" id="port" name="port" disabled />
               </label>
-              <button id="clips_refresh" class="reset"></button>
+              <!-- <button id="connect">Connect</button> -->
+            </span>
+            <br /><br />
+            <span>Sent:</span>
+            <pre id="sent"></pre>
+
+            <span>Received:</span>
+            <pre id="received"></pre>
+          </div>
+
+          <div class="footer">
+            <div id="source">
+              Developed by James Wilson
+              <a href="https://github.com/jmew24/blackmagic-hyperdeck-ui">[Source]</a>
             </div>
           </div>
         </div>
-        <div id="info">
-          <span>
-            <label
-              >IP Address:
-              <input type="text" id="ip_addr" name="ip_addr" disabled />
-            </label>
-            <label
-              >Port:
-              <input type="number" id="port" name="port" disabled />
-            </label>
-            <!-- <button id="connect">Connect</button> -->
-          </span>
-          <br /><br />
-          <span>Sent:</span>
-          <pre id="sent"></pre>
-
-          <span>Received:</span>
-          <pre id="received"></pre>
-        </div>
-
-        <div class="footer">
-          <div id="source">
-            Developed by James Wilson
-            <a href="https://github.com/jmew24/blackmagic-hyperdeck-ui"
-              >[Source]</a
-            >
-          </div>
-        </div>
       </div>
-    </div>
-    <script type="text/javascript" src="resources/smpte-timecode.js"></script>
-    <script type="text/javascript" src="resources/controller.js"></script>
-  </body>
-</html>
+      <script type="text/javascript" src="resources/smpte-timecode.js"></script>
+      <script type="text/javascript" src="resources/controller.js"></script>
+    </body>
+  </html>
