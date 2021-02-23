@@ -65,53 +65,55 @@
             </div>
             <div id="media">
               <Label>Slot:
-                <select id="select_slot"">
+                <select id="select_slot" style="width: 75% !important;">
                   <option value=1 selected> 1 </option>
                   <option value=2> 2 </option>
                 </select>
-                <label>Clips Name:
-                  <input
-                    type="text"
-                    id="clips_name"
-                    name="clips_name"
-                    value="Capture"
-                    />
-                </label>
-                <br />
-                <label>Clips:
-                  <select id="clips" size="16"></select>
-                </label>
-                <button id="clips_refresh" class="reset"></button>
-              </div>
-            </div>
-          </div>
-          <div id="info">
-            <span>
-              <label>IP Address:
-                <input type="text" id="ip_addr" name="ip_addr" disabled />
               </label>
-              <label>Port:
-                <input type="number" id="port" name="port" disabled />
+              <br />
+              <label>Clips Name:
+                <input
+                  type="text"
+                  id="clips_name"
+                  name="clips_name"
+                  value="Capture"
+                  />
               </label>
-              <!-- <button id="connect">Connect</button> -->
-            </span>
-            <br /><br />
-            <span>Sent:</span>
-            <pre id="sent"></pre>
-
-            <span>Received:</span>
-            <pre id="received"></pre>
-          </div>
-
-          <div class="footer">
-            <div id="source">
-              Developed by James Wilson
-              <a href="https://github.com/jmew24/blackmagic-hyperdeck-ui">[Source]</a>
+              <br />
+              <label>Clips:
+                <select id="clips" size="16"></select>
+              </label>
+              <button id="clips_refresh" class="reset"></button>
             </div>
           </div>
         </div>
+        <div id="info">
+          <span>
+            <label>IP Address:
+              <input type="text" id="ip_addr" name="ip_addr" disabled />
+            </label>
+            <label>Port:
+              <input type="number" id="port" name="port" disabled />
+            </label>
+            <!-- <button id="connect">Connect</button> -->
+          </span>
+          <br /><br />
+          <span>Sent:</span>
+          <pre id="sent"></pre>
+
+          <span>Received:</span>
+          <pre id="received"></pre>
+        </div>
+
+        <div class="footer">
+          <div id="source">
+            Developed by James Wilson
+            <a href="https://github.com/jmew24/blackmagic-hyperdeck-ui">[Source]</a>
+          </div>
+        </div>
       </div>
-      <script type="text/javascript" src="resources/smpte-timecode.js"></script>
-      <script type="text/javascript" src="resources/controller.js"></script>
-    </body>
-  </html>
+    </div>
+    <script type="text/javascript" src="resources/smpte-timecode.js"></script>
+    <script type="text/javascript" src="resources/controller.js"></script>
+  </body>
+</html>
