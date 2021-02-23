@@ -22,7 +22,7 @@ async def main(loop, args):
         logger.setLevel(level)
 
     hyperdeck = HyperDeck.HyperDeck(args.hyperdeckIP, args.hyperdeckPort)
-    #await hyperdeck.connect()
+    await hyperdeck.connect()
 
     webui = WebUI.WebUI(args.address, args.port)
     await webui.start(hyperdeck)
