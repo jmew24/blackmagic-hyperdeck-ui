@@ -296,3 +296,10 @@ input[type="checkbox"]:focus {
   -webkit-filter: opacity(0.5) drop-shadow(0 0 0 grey) !important;
   filter: opacity(0.5) drop-shadow(0 0 0 grey) !important;
 }
+
+#error {
+  color: rgb(209, 44, 44);
+  padding: 5px 5px;
+  margin-bottom: 15px;
+  display: none;
+}

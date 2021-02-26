@@ -21,10 +21,10 @@ async def main(loop, args):
         logger = logging.getLogger(name)
         logger.setLevel(level)
 
-    hyperdeck = HyperDeck.HyperDeck(args.hyperdeckIP, args.hyperdeckPort)
+    hyperdeck = HyperDeck.HyperDeck(host=args.hyperdeckIP, port=args.hyperdeckPort)
     await hyperdeck.connect()
 
-    webui = WebUI.WebUI(args.address, args.port)
+    webui = WebUI.WebUI(address=args.address, port=args.port, key=args.key, session=args.session)
     await webui.start(hyperdeck)
 
 if __name__ == "__main__":
@@ -38,6 +38,10 @@ if __name__ == "__main__":
                         help='The HyperDeck IP to connect to, default: 192.168.21.64')
     parser.add_argument('-hdport', '--hyperdeckPort', type=int, nargs='?',
                         default=9993, help='The HyperDeck Port to connect to, default: 9993')
+    parser.add_argument('-k', '--key', type=str, nargs='?',
+                        default='=-0JdLGhHOrA1iKD5dvyw9hhmgH5aXKJIRlqy0PMAIv4=', help='The session cookie name for login storage, default: HYPER_UI_SESSION')
+    parser.add_argument('-s', '--session', type=str, nargs='?',
+                        default='HYPER_UI_SESSION', help='The session cookie name for login storage, default: HYPER_UI_SESSION')
     parser.add_argument('-log', '--logLevel', type=int, nargs='?',
                         default=20, help='''The Loggers base level anything above it will also be shown.
                                             Levels:  

@@ -1,6 +1,9 @@
 {
-  "accounts": [{
-    "user": "brtf",
-    "password": "brtfuser"
-  }]
+  "accounts": [
+    {
+      "name": "admin",
+      "password": "password",
+      "permissions": "public,protected,"
+    }
+  ]
 }
