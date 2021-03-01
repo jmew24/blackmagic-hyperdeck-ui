@@ -21,8 +21,9 @@ h1 {
 }
 
 h3 {
-  margin-bottom: 15px;
-  padding-bottom: 5px;
+  margin-top: 5px;
+  margin-bottom: 10px;
+  padding-bottom: inherit;
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 
