@@ -10,7 +10,7 @@ import HyperDeck
 
 async def main(loop, args):
     logging.basicConfig(
-        format='[%(levelname)s] (%(asctime)s) %(name)s: %(message)s', level=args.logLevel, datefmt='%d-%b-%Y %H:%M:%S')
+        format='(%(asctime)s) [%(levelname)s] %(name)s: %(message)s', datefmt='%d-%b-%Y %H:%M:%S', level=args.logLevel)
     # Configure log level for the various modules.
     loggers = {
         'WebUI': args.logLevel,
