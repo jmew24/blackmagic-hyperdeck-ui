@@ -176,6 +176,15 @@ class WebUI:
                         request['_ws'] = resp
                         await self._websocket_request_handler(request)
                     except Exception as e:
+                        message = {
+                            'response': 'request_error',
+                            'params': {
+                                'command': request.get('command', ""),
+                                'params':request.get('params', dict()),
+                                'message': "{}".format(e),
+                            }
+                        } 
+                        await self._send_websocket_message(message, resp)
                         self.logger.error(
                             "_http_request_get_websocket _websocket_request_handler failed: {}".format(e))
                 elif msg.type == web.WSMsgType.ERROR:

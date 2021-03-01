@@ -1,6 +1,8 @@
 "use strict";
 
 // HyperDeck control elements on the HTML page
+let error = document.getElementById("error");
+let error_message = document.getElementById("error_message");
 let loop = document.getElementById("loop");
 let single = document.getElementById("single");
 let speed = document.getElementById("speed");
@@ -496,6 +498,13 @@ ws.onmessage = (message) => {
       );
 
       break;
+
+    case "request_error":
+      error_message.innerHTML = data.params["message"];
+      error.style.display = "block";
+      console.error(dat.params);
+
+      break;
   }
 };
 
@@ -513,7 +522,16 @@ window.onkeyup = (ev) => {
 
 // Initial control setup once the page is loaded
 window.onload = () => {
+  error_message.innerHTML = "";
+  error.style.display = "none";
+
   speed.value = 1.0;
   speed.oninput();
   resetJog();
+};
+
+window.onerror = function (error) {
+  error_message.innerHTML = error;
+  error.style.display = "block";
+  console.error("Error:", error);
 };
