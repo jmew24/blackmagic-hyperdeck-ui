@@ -90,6 +90,17 @@ h1 {
   border: none;
 }
 
+#error {
+  background: rgba(189, 58, 58, 0.782);
+  color: rgb(0, 0, 0);
+  vertical-align: top;
+  width: 54%;
+  padding: 5px 5px;
+  margin-bottom: 15px;
+  margin-right: 5%;
+  display: none;
+}
+
 #error_exit {
   float: right;
   margin-right: 10px;
@@ -308,11 +319,4 @@ input[type="checkbox"]:focus {
   -webkit-filter: grayscale(100%) !important;
   -webkit-filter: opacity(0.5) drop-shadow(0 0 0 grey) !important;
   filter: opacity(0.5) drop-shadow(0 0 0 grey) !important;
-}
-
-#error {
-  color: rgb(209, 44, 44);
-  padding: 5px 5px;
-  margin-bottom: 15px;
-  display: none;
 }
