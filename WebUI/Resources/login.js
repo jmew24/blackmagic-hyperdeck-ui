@@ -38,6 +38,11 @@ error_exit.onclick = () => {
   error.style.display = "none";
 };
 
+// Initial control setup once the page is loaded
+window.onload = () => {
+  if (error_message.innerHTML.length == 0) error.style.display = "none";
+};
+
 window.onerror = function (error) {
   error_message.innerHTML = error;
   error.style.display = "block";
