@@ -511,6 +511,9 @@ ws.onmessage = (message) => {
 window.onkeydown = (ev) => {
   if (ev.key === "Shift" && jog.step == fps) {
     jog.step = 1.0;
+  } else if (ev.key === "Escape") {
+    error_message.innerHTML = "";
+    error.style.display = "none";
   }
 };
 
