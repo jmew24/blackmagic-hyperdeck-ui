@@ -64,4 +64,5 @@ Also [aiohttp_security](https://github.com/aio-libs/aiohttp-security) is require
 ```
 pip3 install aiohttp_security
 pip3 install aiohttp_security[session]
+pip3 install cryptography
 ```
