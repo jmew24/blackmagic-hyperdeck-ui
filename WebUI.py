@@ -15,7 +15,8 @@ try:
     from aiohttp_session import setup as setup_session
     from aiohttp_session.cookie_storage import EncryptedCookieStorage
 except ImportError:
-    print("The aiohttp_session library was not found. Please install it via `pip3 install aiohttp_security[session]` and try again.")
+    print(
+        "The aiohttp_session or cryptography library was not found. Please install them via `pip3 install aiohttp_security[session]` and `pip3 install cryptography` and try again.")
     import sys
     sys.exit(1)
 
@@ -34,6 +35,7 @@ except ImportError:
 from login.authz import DictionaryAuthorizationPolicy, check_credentials
 from login.users import user_map
 from middlewares import setup_middlewares
+
 
 class WebUI:
     logger = logging.getLogger(__name__)
@@ -60,10 +62,13 @@ class WebUI:
         app.user_map = user_map
 
         app.router.add_get('/', self._http_request_get_index, name='index')
-        app.router.add_get('/login', self._http_request_get_login, name='login')
-        app.router.add_get('/hyperdeck', self._http_request_get_hyperdeck, name='hyperdeck')
+        app.router.add_get(
+            '/login', self._http_request_get_login, name='login')
+        app.router.add_get(
+            '/hyperdeck', self._http_request_get_hyperdeck, name='hyperdeck')
         app.router.add_post('/login', self._http_post_login, name='post_login')
-        app.router.add_post('/logout', self._http_post_logout, name='post_logout')
+        app.router.add_post(
+            '/logout', self._http_post_logout, name='post_logout')
         app.router.add_get('/ws', self._http_request_get_websocket, name="ws")
         app.router.add_static('/resources/', path=str('./WebUI/Resources/'))
 
@@ -71,7 +76,8 @@ class WebUI:
         fernet_key = "-0JdLGhHOrA1iKD5dvyw9hhmgH5aXKJIRlqy0PMAIv4="
         secret_key = base64.urlsafe_b64decode(fernet_key)
 
-        storage = EncryptedCookieStorage(secret_key, cookie_name=self.session_cookie)
+        storage = EncryptedCookieStorage(
+            secret_key, cookie_name=self.session_cookie)
         setup_session(app, storage)
 
         policy = SessionIdentityPolicy()
@@ -90,17 +96,18 @@ class WebUI:
         try:
             logged_in = not await is_anonymous(request)
             username = await authorized_userid(request)
-            user_protected = await permits(request, "protected")            
+            user_protected = await permits(request, "protected")
             if logged_in and username:
                 if user_protected:
                     return web.HTTPFound('/hyperdeck')
                 else:
                     await forget(request, response)
-                    return web.FileResponse(path=str('WebUI/login.html'), status=401,reason='401: Unauthorized')
+                    return web.FileResponse(path=str('WebUI/login.html'), status=401, reason='401: Unauthorized')
             else:
                 return response
         except Exception as e:
-            self.logger.debug('_http_request_get_index exception: {}'.format(e))
+            self.logger.debug(
+                '_http_request_get_index exception: {}'.format(e))
             return response
 
     async def _http_post_login(self, request):
@@ -115,7 +122,7 @@ class WebUI:
             await remember(request, response, username)
             return response
 
-        return web.FileResponse(path=str('WebUI/login.html'), status=401,reason='Invalid username / password combination')
+        return web.FileResponse(path=str('WebUI/login.html'), status=401, reason='Invalid username / password combination')
 
     async def _http_post_logout(self, request):
         await check_authorized(request)
