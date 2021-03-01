@@ -529,8 +529,7 @@ window.onkeyup = (ev) => {
 
 // Initial control setup once the page is loaded
 window.onload = () => {
-  error_message.innerHTML = "";
-  error.style.display = "none";
+  if (error_message.innerHTML.length == 0) error.style.display = "none";
 
   speed.value = 1.0;
   speed.oninput();
