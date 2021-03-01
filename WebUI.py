@@ -11,13 +11,8 @@ except ImportError:
     import sys
     sys.exit(1)
 
-try:
-    from aiohttp_session import setup as setup_session
-    from aiohttp_session.cookie_storage import EncryptedCookieStorage
-except ImportError:
-    print("The aiohttp_session library was not found. Please install it via `pip3 install aiohttp_security[session]` and try again.")
-    import sys
-    sys.exit(1)
+from aiohttp_session import setup as setup_session
+from aiohttp_session.cookie_storage import EncryptedCookieStorage
 
 try:
     from aiohttp_security import setup as setup_security
