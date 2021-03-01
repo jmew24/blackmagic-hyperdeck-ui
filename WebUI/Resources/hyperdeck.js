@@ -3,6 +3,7 @@
 // HyperDeck control elements on the HTML page
 let error = document.getElementById("error");
 let error_message = document.getElementById("error_message");
+let error_exit = document.getElementById("error_exit");
 let loop = document.getElementById("loop");
 let single = document.getElementById("single");
 let speed = document.getElementById("speed");
@@ -302,6 +303,11 @@ btnLogout.onclick = () => {
   });
 };
 
+error_exit.onclick = () => {
+  error_message.innerHTML = "";
+  error.style.display = "none";
+};
+
 select_slot.onchange = () => {
   const newSlot = Number(select_slot.options[select_slot.selectedIndex].value);
   const command = {
@@ -511,9 +517,6 @@ ws.onmessage = (message) => {
 window.onkeydown = (ev) => {
   if (ev.key === "Shift" && jog.step == fps) {
     jog.step = 1.0;
-  } else if (ev.key === "Escape") {
-    error_message.innerHTML = "";
-    error.style.display = "none";
   }
 };
 

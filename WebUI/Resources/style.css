@@ -85,6 +85,19 @@ h1 {
 .reset {
   width: 20px;
   height: 20px;
+  background: url(exit.png);
+  background-size: cover;
+  border: none;
+}
+
+#error_exit {
+  float: right;
+  margin-right: 10px;
+}
+
+.reset {
+  width: 20px;
+  height: 20px;
   background: url(reset.png);
   background-size: cover;
   border: none;

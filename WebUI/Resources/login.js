@@ -3,6 +3,7 @@ let user_name = document.getElementById("user_name");
 let password = document.getElementById("password");
 let error = document.getElementById("error");
 let error_message = document.getElementById("error_message");
+let error_exit = document.getElementById("error_exit");
 
 btnLogin.onclick = () => {
   error.style.display = "none";
@@ -30,6 +31,11 @@ btnLogin.onclick = () => {
       error.style.display = "block";
       console.error("Error:", error);
     });
+};
+
+error_exit.onclick = () => {
+  error_message.innerHTML = "";
+  error.style.display = "none";
 };
 
 window.onerror = function (error) {
