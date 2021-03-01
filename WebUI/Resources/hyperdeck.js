@@ -508,7 +508,7 @@ ws.onmessage = (message) => {
     case "request_error":
       error_message.innerHTML = data.params["message"];
       error.style.display = "block";
-      console.error(dat.params);
+      console.error(data.params);
 
       break;
   }
