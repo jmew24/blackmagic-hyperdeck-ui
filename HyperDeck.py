@@ -134,7 +134,7 @@ class HyperDeck:
             slot = 1;
         elif slot > 2:
             slot = 2;
-        command = 'slot select: slot id:: {}'.format(slot)
+        command = 'slot select: slot id: {}'.format(slot)
         response = await self._send_command(command)
         return response and not response['error']
 
