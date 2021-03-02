@@ -159,15 +159,15 @@ h3 {
 }
 
 #container button {
-  opacity: 0.5;
-}
-
-#container button:hover {
   opacity: 1;
 }
 
-#container button:active {
+#container button:hover {
   opacity: 0.7;
+}
+
+#container button:active {
+  opacity: 0.8;
 }
 
 #container button:focus {
