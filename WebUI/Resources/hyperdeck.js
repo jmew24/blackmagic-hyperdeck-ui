@@ -26,7 +26,6 @@ let received = document.getElementById("received");
 let select_slot = document.getElementById("select_slot");
 let clips_name = document.getElementById("clips_name");
 //let connect = document.getElementById('connect');
-let user_name = document.getElementById("user_name");
 let btnLogout = document.getElementById("btnLogout");
 let ip_addr = document.getElementById("ip_addr");
 let port = document.getElementById("port");
@@ -293,7 +292,6 @@ clips_refresh.onclick = () => {
 
 btnLogout.onclick = () => {
   let formData = new FormData();
-  formData.append("user_name", user_name.value.trim());
 
   fetch("/logout", {
     body: formData,
@@ -487,7 +485,6 @@ ws.onmessage = (message) => {
       break;
 
     case "hyperdeck_load":
-      user_name.value = data.params["user_name"];
       ip_addr.value = data.params["host"];
       port.value = data.params["port"];
 

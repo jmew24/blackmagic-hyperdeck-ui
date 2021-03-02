@@ -130,14 +130,14 @@ class WebUI:
         await forget(request, response)
         return response
 
-    async def _http_request_get_login(self, request: web.Request):
+    async def _http_request_get_login(self, request):
         return web.FileResponse(path=str('WebUI/login.html'))
 
-    async def _http_request_get_hyperdeck(self, request: web.Request):
+    async def _http_request_get_hyperdeck(self, request):
         await check_permission(request, 'protected')
         return web.FileResponse(path=str('WebUI/hyperdeck.html'))
 
-    async def _http_request_get_websocket(self, request: web.Request):
+    async def _http_request_get_websocket(self, request):
         resp = web.WebSocketResponse()
         await resp.prepare(request)
 
@@ -202,7 +202,7 @@ class WebUI:
             self.logger.debug("({}) Websocket Connection Closed.".format(
                 len(self._app.sockets)))
 
-    async def _websocket_request_handler(self, request: web.Request):
+    async def _websocket_request_handler(self, request):
         ws = request.get('_ws', None)
         command = request.get('command')
         params = request.get('params', dict())
@@ -212,11 +212,9 @@ class WebUI:
             await self._hyperdeck_event('clips')
             await self._hyperdeck_event('status')
         elif command == 'hyperdeck':
-            user_name = await authorized_userid(request)
             message = {
                 'response': 'hyperdeck_load',
                 'params': {
-                    'user_name': user_name,
                     'host': self._hyperdeck.getHost(),
                     'port': self._hyperdeck.getPort(),
                 }
