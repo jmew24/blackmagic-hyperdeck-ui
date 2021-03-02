@@ -1,7 +1,7 @@
 import asyncio
 import logging
 
-status_timeout = 3600
+status_timeout = 600
 
 class HyperDeck:
     logger = logging.getLogger(__name__)
