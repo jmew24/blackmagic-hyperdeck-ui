@@ -23,7 +23,7 @@ let prev = document.getElementById("prev");
 let next = document.getElementById("next");
 let sent = document.getElementById("sent");
 let received = document.getElementById("received");
-let select_slot = document.getElementById("select_slot");
+let slot_select = document.getElementById("slot_select");
 let clips_name = document.getElementById("clips_name");
 //let connect = document.getElementById('connect');
 let btnLogout = document.getElementById("btnLogout");
@@ -306,10 +306,10 @@ error_exit.onclick = () => {
   error.style.display = "none";
 };
 
-select_slot.onchange = () => {
-  const newSlot = Number(select_slot.options[select_slot.selectedIndex].value);
+slot_select.onchange = () => {
+  const newSlot = Number(slot_select.options[slot_select.selectedIndex].value);
   const command = {
-    command: "select_slot",
+    command: "slot_select",
     params: {
       slot: newSlot,
     },

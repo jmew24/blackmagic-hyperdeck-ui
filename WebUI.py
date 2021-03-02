@@ -266,9 +266,9 @@ class WebUI:
             await self._hyperdeck.jog_to_timecode(timecode)
         elif command == "slot_info":
             await self._hyperdeck.slot_info()
-        elif command == "select_slot":
+        elif command == "slot_select":
             slot = params.get('slot', 1)
-            await self._hyperdeck.select_slot(slot)
+            await self._hyperdeck.slot_select(slot)
 
     async def _send_websocket_message(self, message, socket=None):
         if socket is None:
