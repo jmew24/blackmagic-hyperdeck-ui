@@ -1,10 +1,8 @@
 import asyncio
 import logging
-import time
 
 status_timeout = 600
 ping_timer = 60
-ping_timeout = 20
 
 class HyperDeck:
     logger = logging.getLogger(__name__)
@@ -21,8 +19,6 @@ class HyperDeck:
         self._response_future = None
         self._socketCount = 0
         self._statusCount = status_timeout
-        self._pingSent = 0
-        self._pingResponse = 0
 
     def connectedSockets(self, count=0):
         if count is not None and (type(count) == int or type(count) == float):
@@ -253,18 +249,10 @@ class HyperDeck:
             try:
                 # We periodically ping the HyperDeck
                 await asyncio.sleep(ping_timer)
-                if (self._pingSent > self._pingResponse):
-                    secondsSinceEpoch = time.time()
-                    self._pingResponse = secondsSinceEpoch - 1
-                    self._pingSent = secondsSinceEpoch
-                    #ping failed, reconnect
-                    self.connect()
-                else:
-                    self._pingSent = time.time()
-                    await self.ping()
-                    self._pingResponse = time.time()
+                await self.ping()
             except Exception as e:
                 self.logger.error("_ping_state failed: {}".format(e))
+                self.connect()
                 return
 
     async def _parse_responses(self):
