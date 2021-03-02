@@ -7,20 +7,22 @@
 
 ## Optional Arguments
 
-| Short-Name | Full-Name       | type     | Default         |                                                                                               Description                                                                                               |
-| :--------- | :-------------- | :------- | :-------------- | :-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
-| `-a`       | `--address`     | `string` | `localhost`     |                                                                                     The host to use for the web UI                                                                                      |
-| `-p`       | `--port`        | `int`    | `8080`          |                                                                                     The port to use for the web UI                                                                                      |
-| `-hdip`    | `--hyperdeckIP` | `string` | `192.168.21.64` |                                                                                     The HyperDeck IP to connect to                                                                                      |
-| `-hdport`  | `--hdport`      | `int`    | `9993`          |                                                                                    The HyperDeck Port to connect to                                                                                     |
-| `-log`     | `--logLevel`    | `int`    | `20`            | The Loggers base level anything above it will also be shown.<br />**Levels:**<br />_(None)_ `0`<br />_(Debug)_ `10`<br />_(Info)_ `20`<br />_(Warning)_ `30`<br />_(Error)_ `40`<br />_(Critical)_ `50` |
+| Short-Name | Full-Name       | type     | Default            |                                                                                               Description                                                                                               |
+| :--------- | :-------------- | :------- | :----------------- | :-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
+| `-a`       | `--address`     | `string` | `localhost`        |                                                                                     The host to use for the web UI                                                                                      |
+| `-p`       | `--port`        | `int`    | `8080`             |                                                                                     The port to use for the web UI                                                                                      |
+| `-hdip`    | `--hyperdeckIP` | `string` | `192.168.21.64`    |                                                                                     The HyperDeck IP to connect to                                                                                      |
+| `-hdport`  | `--hdport`      | `int`    | `9993`             |                                                                                    The HyperDeck Port to connect to                                                                                     |
+| `-k`       | `--key`         | `string` | `None`             |                                                      The session cookie key for login storage. `Must be 32 cryptographically secure random bytes`                                                       |
+| `-s`       | `--session`     | `string` | `HYPER_UI_SESSION` |                                                                                The session cookie name for login storage                                                                                |
+| `-log`     | `--logLevel`    | `int`    | `20`               | The Loggers base level anything above it will also be shown.<br />**Levels:**<br />_(None)_ `0`<br />_(Debug)_ `10`<br />_(Info)_ `20`<br />_(Warning)_ `30`<br />_(Error)_ `40`<br />_(Critical)_ `50` |
 
 ## Example:
 
 Running:
 
 ```python
-python3 Main.py -a localhost -p 8080 -hdip 192.168.21.64 -hdport 9993 -log 20
+python3 Main.py -a localhost -p 8080 -hdip 192.168.21.64 -hdport 9993 -s HYPER_UI_SESSION -log 20
 ```
 
 will start the Blackmagic HyperDeck UI webserver on localhost:8080 and will connect to a HyperDeck at 192.168.21.64:9993
@@ -55,4 +57,12 @@ This can be installed typically via `pip`, using:
 
 ```
 pip3 install aiohttp
+```
+
+Also [aiohttp_security](https://github.com/aio-libs/aiohttp-security) is required for login support.
+
+```
+pip3 install aiohttp_security
+pip3 install aiohttp_security[session]
+pip3 install cryptography
 ```

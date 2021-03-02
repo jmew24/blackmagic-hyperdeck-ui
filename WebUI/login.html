@@ -12,24 +12,28 @@
   <body>
     <div id="container">
       <h1>Blackmagic Design - Hyperdeck UI: Login</h1>
-      <div id="controller">
+      <div id="main">
+
+        <div id="error">
+          <button id="error_exit" class="exit"></button>
+          <h3 id="error_heading">Error</h3>
+          <span id="error_message"></span>
+        </div>
+
         <div id="login">
-          <span>
-            <label>User Name:
-              <input type="text" id="user_name" name="user_name" />
-            </label>
-            <label>Password:
-              <input type="password" id="password" name="password" />
-            </label>
-            <button id="btnLogin">Login</button>
+          <label>User Name:
+            <input type="text" id="user_name" name="user_name" />
+          </label>
+          <label>Password:
+            <input type="password" id="password" name="password" />
+          </label>
+          <button id="btnLogin">Login</button>
         </div>
 
         <div class="footer">
           <div id="source">
             Developed by James Wilson
-            <a href="https://github.com/jmew24/blackmagic-hyperdeck-ui"
-              >[Source]</a
-            >
+            <a href="https://github.com/jmew24/blackmagic-hyperdeck-ui">[Source]</a>
           </div>
         </div>
       </div>
