@@ -481,31 +481,28 @@ ws.onmessage = (message) => {
         const sentMessage = paramsSent.join("\n").trim();
 
         // Ignore ping checks
-        console.log({ paramsSent });
-        console.log({ sentMessage });
         if (sentMessage.indexOf("ping") >= 0) {
-          console.log("ping found");
           return;
-        }
+        } else {
+          sent.innerHTML = sentMessage;
+          received.innerHTML = paramsReceived.join("\n").trim();
 
-        sent.innerHTML = sentMessage;
-        received.innerHTML = paramsReceived.join("\n").trim();
-
-        if (paramsReceived[7] !== undefined) {
-          let timecodeData = paramsReceived[7];
-          if (timecodeData.indexOf("timecode:") >= 0) {
-            setDropFrame(timecodeData.replace("timecode:", ""));
+          if (paramsReceived[7] !== undefined) {
+            let timecodeData = paramsReceived[7];
+            if (timecodeData.indexOf("timecode:") >= 0) {
+              setDropFrame(timecodeData.replace("timecode:", ""));
+            }
           }
-        }
 
-        if (paramsReceived[8] !== undefined) {
-          let videoFormatData = paramsReceived[8];
-          if (videoFormatData.indexOf("video format:") >= 0) {
-            videoFormat = videoFormatData.replace("video format:", "").trim();
-            if (videoFormat.indexOf("2997") >= 0) fps = 29.97;
-            else if (videoFormat.indexOf("30") >= 0) fps = 30;
-            else if (videoFormat.indexOf("5994") >= 0) fps = 59.94;
-            else if (videoFormat.indexOf("60") >= 0) fps = 60.0;
+          if (paramsReceived[8] !== undefined) {
+            let videoFormatData = paramsReceived[8];
+            if (videoFormatData.indexOf("video format:") >= 0) {
+              videoFormat = videoFormatData.replace("video format:", "").trim();
+              if (videoFormat.indexOf("2997") >= 0) fps = 29.97;
+              else if (videoFormat.indexOf("30") >= 0) fps = 30;
+              else if (videoFormat.indexOf("5994") >= 0) fps = 59.94;
+              else if (videoFormat.indexOf("60") >= 0) fps = 60.0;
+            }
           }
         }
 
