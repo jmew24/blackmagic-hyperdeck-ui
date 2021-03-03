@@ -481,7 +481,12 @@ ws.onmessage = (message) => {
         const sentMessage = paramsSent.join("\n").trim();
 
         // Ignore ping checks
-        if (sentMessage.indexOf("ping") >= 0) return;
+        console.log({ paramsSent });
+        console.log({ sentMessage });
+        if (sentMessage.indexOf("ping") >= 0) {
+          console.log("ping found");
+          return;
+        }
 
         sent.innerHTML = sentMessage;
         received.innerHTML = paramsReceived.join("\n").trim();
