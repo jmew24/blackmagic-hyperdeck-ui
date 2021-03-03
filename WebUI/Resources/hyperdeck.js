@@ -476,18 +476,24 @@ ws.onmessage = (message) => {
       const is_state_request = data.params["sent"][0] == "transport info";
 
       if (allow_state_transcript || !is_state_request) {
-        sent.innerHTML = data.params["sent"].join("\n").trim();
-        received.innerHTML = data.params["received"].join("\n").trim();
+        const paramsSent = data.params["sent"];
+        const paramsReceived = data.params["received"];
 
-        if (data.params["received"][7] !== undefined) {
-          let timecodeData = data.params["received"][7];
+        // Ignore ping checks
+        if (params.indexOf("ping") >= 0) return;
+
+        sent.innerHTML = paramsSent.join("\n").trim();
+        received.innerHTML = paramsReceived.join("\n").trim();
+
+        if (paramsReceived[7] !== undefined) {
+          let timecodeData = paramsReceived[7];
           if (timecodeData.indexOf("timecode:") >= 0) {
             setDropFrame(timecodeData.replace("timecode:", ""));
           }
         }
 
-        if (data.params["received"][8] !== undefined) {
-          let videoFormatData = data.params["received"][8];
+        if (paramsReceived[8] !== undefined) {
+          let videoFormatData = paramsReceived[8];
           if (videoFormatData.indexOf("video format:") >= 0) {
             videoFormat = videoFormatData.replace("video format:", "").trim();
             if (videoFormat.indexOf("2997") >= 0) fps = 29.97;
