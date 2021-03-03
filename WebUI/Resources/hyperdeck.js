@@ -328,6 +328,12 @@ ws.onopen = () => {
   ws.send(JSON.stringify(command));
 };
 
+ws.onclose = (e) => {
+  error_message.innerHTML = "Connection Closed. Try refreshing to re-connect";
+  error.style.display = "block";
+  console.error("ws.onclose", e);
+};
+
 // Websocket message parsing
 ws.onmessage = (message) => {
   const data = JSON.parse(message.data);
