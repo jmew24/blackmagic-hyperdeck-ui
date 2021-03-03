@@ -478,11 +478,12 @@ ws.onmessage = (message) => {
       if (allow_state_transcript || !is_state_request) {
         const paramsSent = data.params["sent"];
         const paramsReceived = data.params["received"];
+        const sentMessage = paramsSent.join("\n").trim();
 
         // Ignore ping checks
-        if (params.indexOf("ping") >= 0) return;
+        if (sentMessage.indexOf("ping") >= 0) return;
 
-        sent.innerHTML = paramsSent.join("\n").trim();
+        sent.innerHTML = sentMessage;
         received.innerHTML = paramsReceived.join("\n").trim();
 
         if (paramsReceived[7] !== undefined) {
