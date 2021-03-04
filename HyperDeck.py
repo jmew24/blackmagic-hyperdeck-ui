@@ -13,6 +13,7 @@ class HyperDeck:
         self.clips = []
         self.status = dict()
 
+        self.do_while = False
         self._loop = loop or asyncio.get_event_loop()
         self._transport = None
         self._callback = None
@@ -57,6 +58,14 @@ class HyperDeck:
             'Connecting to {}:{}...'.format(self.host, self.port))
 
         try:
+            if self._transport:
+                self._transport[1].close()
+                await self._transport[1].wait_closed()
+        except Exception as e:
+            self.logger.error("Failed to close current connection: {}".format(e))
+
+        try:
+            self.do_while = True
             self._transport = await asyncio.open_connection(host=self.host, port=self.port, loop=self._loop)
             self.logger.info('Connection established.')
 
@@ -227,7 +236,7 @@ class HyperDeck:
         return response
 
     async def _poll_state(self):
-        while True:
+        while self.do_while:
             try:
                 # We have to periodically poll the HyperDeck's state, rather than
                 # bombarding it with continuous updates.
@@ -245,7 +254,7 @@ class HyperDeck:
                 return
 
     async def _ping_state(self):
-        while True:
+        while self.do_while:
             try:
                 # We periodically ping the HyperDeck
                 await asyncio.sleep(ping_timer)
@@ -256,7 +265,7 @@ class HyperDeck:
                 return
 
     async def _parse_responses(self):
-        while True:
+        while self.do_while:
             try:
                 response_lines = await self._receive()
 
@@ -265,8 +274,10 @@ class HyperDeck:
                 if len(response_lines) == 0:
                     continue
             except Exception as e:
+                self.do_while = False
                 self.logger.error(
                     "Connection failed: {}".format(e))
+                self.connect()
                 return
 
             try:
@@ -331,7 +342,7 @@ class HyperDeck:
         # Multi-line responses end with a colon on the first line; we need to
         # keep reading from the device in this cause until we hit an empty line.
         if str.endswith(lines[0], ':'):
-            while True:
+            while self.do_while:
                 line = await _read_line()
                 if not len(line):
                     break
