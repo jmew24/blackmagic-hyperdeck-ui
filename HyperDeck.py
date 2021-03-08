@@ -2,7 +2,6 @@ import asyncio
 import logging
 
 status_timeout = 600
-ping_timer = 60
 
 class HyperDeck:
     logger = logging.getLogger(__name__)
@@ -76,7 +75,6 @@ class HyperDeck:
             # Set up a worker task to periodically poll the HyperDeck state, so
             # we can keep track of what it is currently doing:
             self._loop.create_task(self._poll_state())
-            self._loop.create_task(self._ping_state())
         except Exception as e:
             self.logger.error("Failed to connect: {}".format(e))
             return await self.reconnect(30);
@@ -101,9 +99,7 @@ class HyperDeck:
         return response and not response['error']
 
     async def connected(self):
-        command = 'ping'
-        response = await self._send_command(command)
-        return response and not response['error']
+        return await self.ping()
 
     async def record(self):
         command = 'record'
@@ -258,17 +254,6 @@ class HyperDeck:
             except Exception as e:
                 self.logger.error(
                     "_poll_state failed: {}".format(e))
-                return
-
-    async def _ping_state(self):
-        while self.do_while:
-            try:
-                # We periodically ping the HyperDeck
-                await asyncio.sleep(ping_timer)
-                await self.ping()
-            except Exception as e:
-                self.logger.error("_ping_state failed: {}".format(e))
-                await self.reconnect()
                 return
 
     async def _parse_responses(self):
