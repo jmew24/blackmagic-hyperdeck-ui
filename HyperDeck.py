@@ -1,6 +1,7 @@
 import asyncio
 import logging
 
+reconnect_timer = 5
 status_timeout = 600
 ping_timer = 60
 
@@ -47,7 +48,7 @@ class HyperDeck:
         self.host = host
         self.port = port
 
-        await self.connect()
+        await self.reconnect(False);
 
     async def set_callback(self, callback):
         # This callback is invoked each time the HyperDeck's state changes.
@@ -79,7 +80,7 @@ class HyperDeck:
             self._loop.create_task(self._ping_state())
         except Exception as e:
             self.logger.error("Failed to connect: {}".format(e))
-            return None
+            return await self.reconnect();
 
         # Refresh our internal caches of the current HyperDeck state.
         await self.enable_notifications()
@@ -87,6 +88,14 @@ class HyperDeck:
         await self.update_status()
 
         return self._transport
+
+    async def reconnect(self, waitForTimer=True):
+        _tmr = reconnect_timer
+        if (waitForTimer == False):
+            _tmr = 1      
+        self.logger.error("Reconnecting in {} second(s)".format(_tmr))
+        await asyncio.sleep(_tmr)
+        return await self.connect()
 
     async def ping(self):
         command = 'ping'
@@ -261,7 +270,7 @@ class HyperDeck:
                 await self.ping()
             except Exception as e:
                 self.logger.error("_ping_state failed: {}".format(e))
-                self.connect()
+                await self.reconnect()
                 return
 
     async def _parse_responses(self):
@@ -277,7 +286,7 @@ class HyperDeck:
                 self.do_while = False
                 self.logger.error(
                     "Connection failed: {}".format(e))
-                await self.connect()
+                await self.reconnect();
                 return
 
             try:
