@@ -277,7 +277,7 @@ class HyperDeck:
                 self.do_while = False
                 self.logger.error(
                     "Connection failed: {}".format(e))
-                self.connect()
+                await self.connect()
                 return
 
             try:
