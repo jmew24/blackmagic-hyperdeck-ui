@@ -221,7 +221,7 @@ stop.onclick = () => {
     window.location = `${loc.origin}/hyperdeck?slotIndex=${Number(
       slot_select.selectedIndex
     )}&clipsName=${clips_name.value}`;
-  }, 500);
+  }, 100);
 };
 
 prev.onclick = () => {
