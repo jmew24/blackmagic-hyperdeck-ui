@@ -371,11 +371,6 @@ ws.onmessage = (message) => {
         setDropFrame(paramsTC);
         if (status === "record") {
           const paramsDisplayTC = data.params["display timecode"];
-          record.disabled = true;
-          play.disabled = true;
-          stop.disabled = false;
-          prev.disabled = true;
-          next.disabled = true;
 
           try {
             const displayTimecode = Timecode(paramsDisplayTC, fps, dropFrame);
@@ -394,11 +389,6 @@ ws.onmessage = (message) => {
 
         if (status.indexOf("stopped") >= 0 && is_playing) {
           is_playing = false;
-          record.disabled = false;
-          play.disabled = false;
-          stop.disabled = true;
-          prev.disabled = true;
-          next.disabled = true;
 
           try {
             const startingTimecode = Timecode(
@@ -414,11 +404,6 @@ ws.onmessage = (message) => {
         } else if (status.indexOf("play") >= 0 || status.indexOf("jog") >= 0) {
           is_playing = true;
           disableElement(jog_status, false);
-          record.disabled = true;
-          play.disabled = true;
-          stop.disabled = false;
-          prev.disabled = false;
-          next.disabled = false;
 
           try {
             const startingTimecode = Timecode(
