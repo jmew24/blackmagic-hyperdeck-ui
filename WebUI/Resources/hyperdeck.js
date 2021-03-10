@@ -218,11 +218,9 @@ stop.onclick = () => {
   disableElement(live_div, false);
   setTimeout(() => {
     const loc = window.location;
-    window.location = `${loc.origin}${
-      loc.port ? `:${loc.port}` : ""
-    }/hyperdeck?slotIndex=${Number(slot_select.selectedIndex)}&clipsName=${
-      clips_name.value
-    }`;
+    window.location = `${loc.origin}/hyperdeck?slotIndex=${Number(
+      slot_select.selectedIndex
+    )}&clipsName=${clips_name.value}`;
   }, 500);
 };
 
