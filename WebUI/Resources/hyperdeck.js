@@ -198,7 +198,9 @@ stop.onclick = () => {
   is_playing = false;
   disableElement(live_div, false);
   setTimeout(() => {
-    window.location = window.location.href;
+    window.location = `${window.location.href}?slotIndex=${Number(
+      slot_select.selectedIndex
+    )}&clipName=${clips_name.value}`;
   }, 500);
 };
 
@@ -548,6 +550,15 @@ window.onkeyup = (ev) => {
 // Initial control setup once the page is loaded
 window.onload = () => {
   if (error_message.innerHTML.length == 0) error.style.display = "none";
+
+  const queryString = window.location.search;
+  const urlParams = new URLSearchParams(queryString);
+  const slotIndex = urlParams.get("slotIndex");
+  const clips_name = urlParams.get("clips_name");
+  if (clips_name && clips_name.length > 0)
+    clips_name.value = clips_name.toString().trim();
+  if (slotIndex && slotIndex.length > 0)
+    slot_select.selectedIndex = Number(slotIndex);
 
   speed.value = 1.0;
   speed.oninput();
