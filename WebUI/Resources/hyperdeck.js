@@ -197,7 +197,9 @@ stop.onclick = () => {
   ws.send(JSON.stringify(command));
   is_playing = false;
   disableElement(live_div, false);
-  window.location.reload();
+  setTimeout(() => {
+    window.location.reload();
+  }, 500);
 };
 
 prev.onclick = () => {
