@@ -569,8 +569,6 @@ window.onkeyup = (ev) => {
 
 // Initial control setup once the page is loaded
 window.onload = () => {
-  if (error_message.innerHTML.length == 0) error.style.display = "none";
-
   const slotIndex = getUrlParam("slotIndex", 0);
   const clipsName = getUrlParam("clipsName", "");
   if (clipsName.length > 0) clips_name.value = clipsName.toString().trim();
@@ -579,6 +577,8 @@ window.onload = () => {
   speed.value = 1.0;
   speed.oninput();
   resetJog();
+
+  if (error_message.innerHTML.length == 0) error.style.display = "none";
 };
 
 window.onerror = function (error) {
