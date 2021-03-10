@@ -198,7 +198,7 @@ stop.onclick = () => {
   is_playing = false;
   disableElement(live_div, false);
   setTimeout(() => {
-    window.location.reload();
+    location.reload();
   }, 500);
 };
 
