@@ -54,6 +54,25 @@ let is_playing = false;
 let is_updating = false;
 let auto_refresh = false;
 
+const getUrlVars = () => {
+  let vars = {};
+  let parts = window.location.href.replace(
+    /[?&]+([^=&]+)=([^&]*)/gi,
+    function (m, key, value) {
+      vars[key] = decodeURI(value);
+    }
+  );
+  return vars;
+};
+
+const getUrlParam = (parameter, defaultValue) => {
+  let urlParameter = defaultValue;
+  if (window.location.href.indexOf(parameter) > -1) {
+    urlParameter = getUrlVars()[parameter];
+  }
+  return urlParameter;
+};
+
 const disableElement = (elem, disable = true) => {
   var nodes = elem.getElementsByTagName("*");
   for (var i = 0; i < nodes.length; i++) {
@@ -198,9 +217,12 @@ stop.onclick = () => {
   is_playing = false;
   disableElement(live_div, false);
   setTimeout(() => {
-    window.location = `${window.location.href}?slotIndex=${Number(
-      slot_select.selectedIndex
-    )}&clipName=${clips_name.value}`;
+    const loc = window.location;
+    window.location = `${loc.origin}${
+      loc.port ? `:${loc.port}` : ""
+    }/hyperdeck?slotIndex=${Number(slot_select.selectedIndex)}&clipsName=${
+      clips_name.value
+    }`;
   }, 500);
 };
 
@@ -551,14 +573,10 @@ window.onkeyup = (ev) => {
 window.onload = () => {
   if (error_message.innerHTML.length == 0) error.style.display = "none";
 
-  const queryString = window.location.search;
-  const urlParams = new URLSearchParams(queryString);
-  const slotIndex = urlParams.get("slotIndex");
-  const clips_name = urlParams.get("clips_name");
-  if (clips_name && clips_name.length > 0)
-    clips_name.value = clips_name.toString().trim();
-  if (slotIndex && slotIndex.length > 0)
-    slot_select.selectedIndex = Number(slotIndex);
+  const slotIndex = getUrlParam("slotIndex", 0);
+  const clips_name = getUrlParam("clipsName", "");
+  if (clips_name.length > 0) clips_name.value = clips_name.toString().trim();
+  if (slotIndex.length > 0) slot_select.selectedIndex = Number(slotIndex);
 
   speed.value = 1.0;
   speed.oninput();
