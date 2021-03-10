@@ -572,8 +572,8 @@ window.onload = () => {
   if (error_message.innerHTML.length == 0) error.style.display = "none";
 
   const slotIndex = getUrlParam("slotIndex", 0);
-  const clips_name = getUrlParam("clipsName", "");
-  if (clips_name.length > 0) clips_name.value = clips_name.toString().trim();
+  const clipsName = getUrlParam("clipsName", "");
+  if (clipsName.length > 0) clips_name.value = clipsName.toString().trim();
   if (slotIndex.length > 0) slot_select.selectedIndex = Number(slotIndex);
 
   speed.value = 1.0;
