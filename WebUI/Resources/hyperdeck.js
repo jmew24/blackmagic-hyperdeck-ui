@@ -258,7 +258,7 @@ clips.onchange = () => {
     const endingTC = Timecode(startingTC, fps, dropFrame).add(duration);
 
     // First stop the current clip if one is playing
-    if (is_playing && clips.selectedIndex >= 0) stop.onclick();
+    if (is_playing && clips.selectedIndex >= 0) stop.click();
     lastFrame = -1;
 
     const command = {
@@ -282,7 +282,7 @@ clips.onchange = () => {
     jog.oninput();
   } catch {
     // Ignore the jog updating as something went wrong
-    if (is_playing && clips.selectedIndex >= 0) stop.onclick();
+    if (is_playing && clips.selectedIndex >= 0) stop.click();
     lastFrame = -1;
 
     const command = {
@@ -344,7 +344,7 @@ slot_select.onchange = () => {
   ws.send(JSON.stringify(command));
 
   setTimeout(() => {
-    clips_refresh.onclick();
+    clips_refresh.click();
 
     if (newSlot == 0) return;
     const command = {
@@ -478,7 +478,7 @@ ws.onmessage = (message) => {
           // If auto refresh is on, set it false refresh the clips and set the index to our newest clip
           if (auto_refresh) {
             auto_refresh = false;
-            clips_refresh.onclick();
+            clips_refresh.click();
             setTimeout(() => {
               clips.selectedIndex = clips.length - 1;
             }, 500);
@@ -597,6 +597,8 @@ ws.onmessage = (message) => {
           command: "slot_info",
         })
       );
+
+      clips_refresh.click();
 
       break;
 
