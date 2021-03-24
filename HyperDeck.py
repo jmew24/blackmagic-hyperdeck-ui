@@ -143,17 +143,38 @@ class HyperDeck:
         response = await self._send_command(command)
         return response and not response['error']
 
-    async def slot_info(self):
-        command = 'slot info'
+    async def slot_info(self, slot=None):
+        slotQuery = ''
+        if slot is None:
+            slotQuery = ''
+        elif slot <= 1:
+            slotQuery = ': slot id: 1';
+        elif slot >= 2:
+            slotQuery = ': slot id: 2';
+        command = 'slot info{}'.format(slotQuery)
         response = await self._send_command(command)
         return response and not response['error']
 
     async def slot_select(self, slot=1):
-        if slot < 1:
+        if slot is None:
             slot = 1;
-        elif slot > 2:
+        elif slot <= 1:
+            slot = 1;
+        elif slot >= 2:
             slot = 2;
         command = 'slot select: slot id: {}'.format(slot)
+        response = await self._send_command(command)
+        return response and not response['error']
+
+    async def dist_list(self, slot=None):
+        slotQuery = ''
+        if slot is None:
+            slotQuery = ''
+        elif slot <= 1:
+            slotQuery = ': slot id: 1';
+        elif slot >= 2:
+            slotQuery = ': slot id: 2';
+        command = 'disk list{}'.format(slotQuery)
         response = await self._send_command(command)
         return response and not response['error']
 
@@ -292,7 +313,7 @@ class HyperDeck:
             if response_code == 502:
                 # Short delay to give the HyperDeck enough time to update its
                 # internal clip state.
-                asyncio.sleep(300)
+                await asyncio.sleep(300)
 
                 # 502 Slot Info responses require us to refresh our local clip
                 # cache, since the available disk(s) have changed. Run this

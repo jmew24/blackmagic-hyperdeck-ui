@@ -333,6 +333,8 @@ error_exit.onclick = () => {
 
 slot_select.onchange = () => {
   const newSlot = Number(slot_select.options[slot_select.selectedIndex].value);
+  if (newSlot == 0) return;
+
   const command = {
     command: "slot_select",
     params: {
@@ -343,6 +345,15 @@ slot_select.onchange = () => {
 
   setTimeout(() => {
     clips_refresh.onclick();
+
+    if (newSlot == 0) return;
+    const command = {
+      command: "slot_info",
+      params: {
+        slot: newSlot,
+      },
+    };
+    ws.send(JSON.stringify(command));
   }, 500);
 };
 
@@ -380,6 +391,10 @@ ws.onmessage = (message) => {
       clips.options[data.params["id"] - 1].text =
         "[" + data.params["duration"] + "] " + data.params["name"];
       clips_data[data.params["id"] - 1] = data.params;
+      if (slot_select.disabled) {
+        if (slot_select.selectedIndex === 0) slot_select.selectedIndex = 1;
+        slot_select.disabled = false;
+      }
 
       break;
 
@@ -495,9 +510,31 @@ ws.onmessage = (message) => {
         const paramsSent = data.params["sent"];
         const paramsReceived = data.params["received"];
         const sentMessage = paramsSent.join("\n").trim();
+        if (sentMessage.indexOf("slot info") >= 0) {
+          if (paramsReceived[0].toString().trim() == "105 no disk") {
+            slot_select.selectedIndex = Number(0);
+            slot_select.disabled = true;
+          } else {
+            if (paramsReceived[1].indexOf("slot id: ") >= 0) {
+              const slotNumber = Number(
+                paramsReceived[1].toString().replace("slot id: ", "").trim()
+              );
+              if (slotNumber !== NaN) slot_select.selectedIndex = slotNumber;
+            }
+            slot_select.disabled = false;
+          }
+        } else if (sentMessage.indexOf("disk list") >= 0) {
+          const slotNumber = Number(
+            sentMessage.replace("disk list: slot id: ", "").trim()
+          );
 
-        // Ignore ping checks
+          if (paramsReceived[0].toString().trim() == "105 no disk")
+            slot_select.options[slotNumber].disabled = true;
+          else slot_select.options[slotNumber].disabled = false;
+        }
+
         if (sentMessage.indexOf("ping") >= 0) {
+          // Ignore ping checks
           return;
         } else {
           sent.innerHTML = sentMessage;
@@ -539,7 +576,25 @@ ws.onmessage = (message) => {
 
       ws.send(
         JSON.stringify({
-          command: "slot__info",
+          command: "dist_list",
+          params: {
+            slot: 1,
+          },
+        })
+      );
+
+      ws.send(
+        JSON.stringify({
+          command: "dist_list",
+          params: {
+            slot: 2,
+          },
+        })
+      );
+
+      ws.send(
+        JSON.stringify({
+          command: "slot_info",
         })
       );
 
