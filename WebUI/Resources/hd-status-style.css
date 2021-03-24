@@ -17,14 +17,12 @@ body {
 h1 {
   margin-bottom: 30px;
   padding-bottom: 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 h3 {
   margin-top: 5px;
   margin-bottom: 10px;
   padding-bottom: inherit;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 #container {
