@@ -146,11 +146,6 @@ class WebUI:
         resp = web.WebSocketResponse()
         await resp.prepare(request)
 
-        # Don't process requests from anonymous connections
-        if await is_anonymous(request):
-            self.logger.debug("anonymous ws request: {}".format(request))
-            return resp
-
         try:
             if not resp in self._app.sockets:
                 self._app.sockets.append(resp)
