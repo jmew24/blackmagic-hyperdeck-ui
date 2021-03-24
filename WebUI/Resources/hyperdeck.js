@@ -135,6 +135,39 @@ const resetJog = () => {
   return updateTimecode(Math.round(jog.value), true);
 };
 
+const refreshClips = () => {
+  const command = {
+    command: "clip_refresh",
+  };
+  ws.send(JSON.stringify(command));
+};
+
+const refreshState = () => {
+  const command = {
+    command: "state_refresh",
+  };
+  ws.send(JSON.stringify(command));
+
+  // Keep track of whether the user has initiated a state update, so we know
+  // if we should show it in the transcript or not.
+  allow_state_transcript = true;
+};
+
+const stopHD = () => {
+  const command = {
+    command: "stop",
+  };
+  ws.send(JSON.stringify(command));
+  is_playing = false;
+  disableElement(live_div, false);
+  setTimeout(() => {
+    const loc = window.location;
+    window.location = `${loc.origin}/hyperdeck?slotIndex=${Number(
+      slot_select.selectedIndex
+    )}&clipsName=${clips_name.value}`;
+  }, 100);
+};
+
 // Bind HTML elements to HyperDeck commands
 speed.oninput = () => {
   speed_val.innerHTML = parseFloat(speed.value).toFixed(2);
@@ -210,18 +243,7 @@ play.onclick = () => {
 };
 
 stop.onclick = () => {
-  const command = {
-    command: "stop",
-  };
-  ws.send(JSON.stringify(command));
-  is_playing = false;
-  disableElement(live_div, false);
-  setTimeout(() => {
-    const loc = window.location;
-    window.location = `${loc.origin}/hyperdeck?slotIndex=${Number(
-      slot_select.selectedIndex
-    )}&clipsName=${clips_name.value}`;
-  }, 100);
+  stopHD();
 };
 
 prev.onclick = () => {
@@ -235,14 +257,7 @@ next.onclick = () => {
 };
 
 state_refresh.onclick = () => {
-  const command = {
-    command: "state_refresh",
-  };
-  ws.send(JSON.stringify(command));
-
-  // Keep track of whether the user has initiated a state update, so we know
-  // if we should show it in the transcript or not.
-  allow_state_transcript = true;
+  refreshState();
 };
 
 clips.onchange = () => {
@@ -258,7 +273,7 @@ clips.onchange = () => {
     const endingTC = Timecode(startingTC, fps, dropFrame).add(duration);
 
     // First stop the current clip if one is playing
-    if (is_playing && clips.selectedIndex >= 0) stop.click();
+    if (is_playing && clips.selectedIndex >= 0) stopHD();
     lastFrame = -1;
 
     const command = {
@@ -282,7 +297,7 @@ clips.onchange = () => {
     jog.oninput();
   } catch {
     // Ignore the jog updating as something went wrong
-    if (is_playing && clips.selectedIndex >= 0) stop.click();
+    if (is_playing && clips.selectedIndex >= 0) stopHD();
     lastFrame = -1;
 
     const command = {
@@ -296,10 +311,7 @@ clips.onchange = () => {
 };
 
 clips_refresh.onclick = () => {
-  const command = {
-    command: "clip_refresh",
-  };
-  ws.send(JSON.stringify(command));
+  refreshClips();
 };
 
 /*
@@ -344,7 +356,7 @@ slot_select.onchange = () => {
   ws.send(JSON.stringify(command));
 
   setTimeout(() => {
-    clips_refresh.click();
+    refreshClips();
 
     if (newSlot == 0) return;
     const command = {
@@ -478,7 +490,7 @@ ws.onmessage = (message) => {
           // If auto refresh is on, set it false refresh the clips and set the index to our newest clip
           if (auto_refresh) {
             auto_refresh = false;
-            clips_refresh.click();
+            refreshClips();
             setTimeout(() => {
               clips.selectedIndex = clips.length - 1;
             }, 500);
@@ -598,7 +610,7 @@ ws.onmessage = (message) => {
         })
       );
 
-      clips_refresh.click();
+      refreshClips();
 
       break;
 
