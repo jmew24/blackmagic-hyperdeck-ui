@@ -621,6 +621,9 @@ ws.onmessage = (message) => {
       console.error(`${msg}`, data.params);
 
       break;
+
+    default:
+      break;
   }
 };
 
