@@ -546,9 +546,11 @@ ws.onmessage = (message) => {
             sentMessage.replace("disk list: slot id: ", "").trim()
           );
 
-          if (paramsReceived[0].toString().trim() == "105 no disk")
+          if (paramsReceived[0].toString().trim() == "105 no disk") {
             slot_select.options[slotNumber].disabled = true;
-          else slot_select.options[slotNumber].disabled = false;
+            if (slot_select.selectedIndex == slotNumber)
+              slot_select.selectedIndex = 0;
+          } else slot_select.options[slotNumber].disabled = false;
         }
 
         if (sentMessage.indexOf("ping") >= 0) {
