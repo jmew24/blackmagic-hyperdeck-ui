@@ -313,7 +313,7 @@ class HyperDeck:
             if response_code == 502:
                 # Short delay to give the HyperDeck enough time to update its
                 # internal clip state.
-                await asyncio.sleep(300)
+                await asyncio.sleep(1)
 
                 # 502 Slot Info responses require us to refresh our local clip
                 # cache, since the available disk(s) have changed. Run this
