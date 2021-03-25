@@ -67,7 +67,7 @@ class WebUI:
         app.router.add_get(
             '/hyperdeck', self._http_request_get_hyperdeck, name='hyperdeck')
         app.router.add_get(
-            '/hd-status', self._http_request_get_hd_status, name='hd-status')
+            '/hd-status', self._http_request_get_hd_status, name='hd_status')
         app.router.add_post('/login', self._http_post_login, name='post_login')
         app.router.add_post(
             '/logout', self._http_post_logout, name='post_logout')
