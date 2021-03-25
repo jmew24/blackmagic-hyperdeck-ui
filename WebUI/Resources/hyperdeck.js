@@ -162,9 +162,15 @@ const stopHD = () => {
   disableElement(live_div, false);
   setTimeout(() => {
     const loc = window.location;
-    window.location = `${loc.origin}/hyperdeck?slotIndex=${Number(
-      slot_select.selectedIndex
-    )}&clipsName=${clips_name.value}`;
+    let params = [];
+    if (slot_select.selectedIndex > 0) {
+      params.push(`slotIndex=${Number(slot_select.selectedIndex)}`);
+    }
+    if (clips_name.value !== "Capture") {
+      params.push(`clipsName=${clips_name.value.trim()}`);
+    }
+    if (params.length <= 0) window.location = `${loc.origin}/hyperdeck`;
+    else window.location = `${loc.origin}/hyperdeck?${params.join("&")}`;
   }, 100);
 };
 
@@ -524,7 +530,7 @@ ws.onmessage = (message) => {
         const sentMessage = paramsSent.join("\n").trim();
         if (sentMessage.indexOf("slot info") >= 0) {
           if (paramsReceived[0].toString().trim() == "105 no disk") {
-            slot_select.selectedIndex = Number(0);
+            slot_select.selectedIndex = 0;
             slot_select.disabled = true;
           } else {
             if (paramsReceived[1].indexOf("slot id: ") >= 0) {
@@ -644,7 +650,8 @@ window.onload = () => {
   const slotIndex = getUrlParam("slotIndex", 0);
   const clipsName = getUrlParam("clipsName", "");
   if (clipsName.length > 0) clips_name.value = clipsName.toString().trim();
-  if (slotIndex.length > 0) slot_select.selectedIndex = Number(slotIndex);
+  if (slotIndex.length > 0 && !slot_select.disabled)
+    slot_select.selectedIndex = Number(slotIndex);
 
   speed.value = 1.0;
   speed.oninput();
