@@ -86,7 +86,7 @@ class HyperDeck:
 
         return self._transport
 
-    async def reconnect(self, reconnect_timer = 5):
+    async def reconnect(self, reconnect_timer = None):
         if (reconnect_timer == None):
             reconnect_timer = 5 
         self.logger.error("Reconnecting in {} second(s)".format(reconnect_timer))
