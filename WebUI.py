@@ -67,7 +67,7 @@ class WebUI:
         app.router.add_get(
             '/hyperdeck', self._http_request_get_hyperdeck, name='hyperdeck')
         app.router.add_get(
-            '/hd-status', self._http_request_get_hd_status, name='hd_status')
+            '/hyperdeck-status', self._http_request_get_hyperdeck_status, name='hyperdeck_status')
         app.router.add_post('/login', self._http_post_login, name='post_login')
         app.router.add_post(
             '/logout', self._http_post_logout, name='post_logout')
@@ -139,8 +139,8 @@ class WebUI:
         await check_permission(request, 'protected')
         return web.FileResponse(path=str('WebUI/hyperdeck.html'))
 
-    async def _http_request_get_hd_status(self, request):
-        return web.FileResponse(path=str('WebUI/hd-status.html'))
+    async def _http_request_get_hyperdeck_status(self, request):
+        return web.FileResponse(path=str('WebUI/hyperdeck-status.html'))
 
     async def _http_request_get_websocket(self, request):
         resp = web.WebSocketResponse()
@@ -180,10 +180,10 @@ class WebUI:
                             'response': 'request_error',
                             'params': {
                                 'command': request.get('command', ""),
-                                'params':request.get('params', dict()),
+                                'params': request.get('params', dict()),
                                 'message': "{}".format(e),
                             }
-                        } 
+                        }
                         await self._send_websocket_message(message, resp)
                         self.logger.error(
                             "_http_request_get_websocket _websocket_request_handler failed: {}".format(e))
@@ -220,7 +220,7 @@ class WebUI:
                 }
             }
             await self._send_websocket_message(message, ws)
-        elif command == 'hd-status':
+        elif command == 'hyperdeck-status':
             await self._hyperdeck.update_status()
         elif command == "getNetwork":
             message = {

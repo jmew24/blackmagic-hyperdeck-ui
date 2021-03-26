@@ -31,7 +31,7 @@ const wsConnection = () => {
 
 	ws.onopen = () => {
 		const command = {
-			command: 'hd-status',
+			command: 'hyperdeck-status',
 		};
 		ws.send(JSON.stringify(command));
 		// Reset timeout on successful connection
