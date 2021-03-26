@@ -1,7 +1,7 @@
-"use strict";
+'use strict';
 
 // HyperDeck control elements on the HTML page
-let state = document.getElementById("state");
+let state = document.getElementById('state');
 
 // Global to keep track of whether we are filtering out state updates in the
 // transcript area so that we only display the command/response when
@@ -14,106 +14,99 @@ let reconnectTimeout = 1000;
 let fps = 59.94;
 let dropFrame = true;
 
-const setDropFrame = (timecodeData = "00:00:00;00") => {
-  // Set NDF or DF
-  const parts = timecodeData
-    .trim()
-    .match("^([012]\\d):(\\d\\d):(\\d\\d)(:|;|\\.)(\\d\\d)$");
-  if (parts) {
-    dropFrame = parts[4] !== ":";
-  } else {
-    if (timecodeData.trim().indexOf(";") >= 0) dropFrame = true;
-    else dropFrame = false;
-  }
+const setDropFrame = (timecodeData = '00:00:00;00') => {
+	// Set NDF or DF
+	const parts = timecodeData.trim().match('^([012]\\d):(\\d\\d):(\\d\\d)(:|;|\\.)(\\d\\d)$');
+	if (parts) {
+		dropFrame = parts[4] !== ':';
+	} else {
+		if (timecodeData.trim().indexOf(';') >= 0) dropFrame = true;
+		else dropFrame = false;
+	}
 };
 
 const wsConnection = () => {
-  // Websocket used to communicate with the Python server backend
-  let ws = new WebSocket("ws://" + location.host + "/ws");
+	// Websocket used to communicate with the Python server backend
+	let ws = new WebSocket('ws://' + location.host + '/ws');
 
-  ws.onopen = () => {
-    const command = {
-      command: "hd-status",
-    };
-    ws.send(JSON.stringify(command));
-    // Reset timeout on successful connection
-    reconnectTimeout = 1000;
-  };
+	ws.onopen = () => {
+		const command = {
+			command: 'hd-status',
+		};
+		ws.send(JSON.stringify(command));
+		// Reset timeout on successful connection
+		reconnectTimeout = 1000;
+	};
 
-  ws.onclose = (e) => {
-    console.error(
-      `Socket closed. Reconnect will be attempted in ${
-        reconnectTimeout / 1000
-      } second(s).`,
-      e.reason
-    );
-    setTimeout(function () {
-      reconnectTimeout = reconnectTimeout * 2;
-      wsConnection();
-    }, reconnectTimeout);
-  };
+	ws.onclose = (e) => {
+		console.error(`Socket closed. Reconnect will be attempted in ${reconnectTimeout / 1000} second(s).`, e.reason);
+		setTimeout(function () {
+			reconnectTimeout = reconnectTimeout * 2;
+			wsConnection();
+		}, reconnectTimeout);
+	};
 
-  ws.onerror = function (err) {
-    console.error("Socket encountered error: ", err.message, "Closing socket");
-    ws.close();
-  };
+	ws.onerror = function (err) {
+		console.error('Socket encountered error: ', err.message, 'Closing socket');
+		ws.close();
+	};
 
-  // Websocket message parsing
-  ws.onmessage = (message) => {
-    const data = JSON.parse(message.data);
+	// Websocket message parsing
+	ws.onmessage = (message) => {
+		const data = JSON.parse(message.data);
 
-    switch (data.response) {
-      case "status":
-        const status = data.params["status"];
-        if (status !== undefined) {
-          const paramsTC = data.params["timecode"];
+		switch (data.response) {
+			case 'status':
+				const status = data.params['status'];
+				if (status !== undefined) {
+					const paramsTC = data.params['timecode'];
+					let tcString = paramsTC.toString();
 
-          setDropFrame(paramsTC);
-          if (status === "record") {
-            const paramsDisplayTC = data.params["display timecode"];
+					setDropFrame(paramsTC);
+					if (status === 'record') {
+						const paramsDisplayTC = data.params['display timecode'];
 
-            try {
-              const displayTimecode = Timecode(paramsDisplayTC, fps, dropFrame);
-              const newTimecode = Timecode(paramsTC, fps, dropFrame);
-              state.innerHTML =
-                status +
-                " [" +
-                displayTimecode.subtract(newTimecode).toString() +
-                "]";
-            } catch {
-              state.innerHTML = status + " [" + paramsDisplayTC + "]";
-            }
-          } else {
-            state.innerHTML = status + " [" + paramsTC + "]";
-          }
-        } else state.innerHTML = "Unknown";
+						try {
+							const displayTimecode = Timecode(paramsDisplayTC, fps, dropFrame);
+							const newTimecode = Timecode(paramsTC, fps, dropFrame);
+							tcString = displayTimecode.subtract(newTimecode).toString();
+						} catch {
+							tcString = paramsDisplayTC.toString();
+						}
+					}
+					// Remove the frames from our display
+					if (dropFrame) tcString = tcString.substr(0, tcString.lastIndexOf(';'));
+					else tcString = tcString.substr(0, tcString.lastIndexOf(':'));
 
-        break;
+					state.innerHTML = status + ' [' + tcString + ']';
+				} else state.innerHTML = 'Unknown';
 
-      case "transcript":
-        // We periodically send transport info requests automatically
-        // to the HyperDeck, so don't bother showing them to the user
-        // unless this was a manual refresh request.
-        const is_state_request = data.params["sent"][0] == "transport info";
+				break;
 
-        if (allow_state_transcript || !is_state_request) {
-          allow_state_transcript = false;
-        }
+			case 'transcript':
+				// We periodically send transport info requests automatically
+				// to the HyperDeck, so don't bother showing them to the user
+				// unless this was a manual refresh request.
+				const is_state_request = data.params['sent'][0] == 'transport info';
 
-        break;
+				if (allow_state_transcript || !is_state_request) {
+					allow_state_transcript = false;
+				}
 
-      case "request_error":
-        // Close connection on error
-        ws.close();
+				break;
 
-        break;
+			case 'request_error':
+				// Close connection on error
+				ws.close();
 
-      default:
-        break;
-    }
-  };
+				break;
+
+			default:
+				break;
+		}
+	};
 };
 
 window.onload = () => {
-  wsConnection();
+	wsConnection();
 };
