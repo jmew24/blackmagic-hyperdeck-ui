@@ -391,6 +391,7 @@ ws.onclose = (e) => {
 // Websocket message parsing
 ws.onmessage = (message) => {
   const data = JSON.parse(message.data);
+  let error_message = "";
 
   switch (data.response) {
     case "clip_count":
@@ -623,7 +624,7 @@ ws.onmessage = (message) => {
       break;
 
     case "response_error":
-      const msg = data.params["lines"];
+      error_message = data.params["lines"];
       error_message.innerHTML = msg;
       error.style.display = "block";
       console.error(`${msg}`, data.params);
@@ -631,7 +632,7 @@ ws.onmessage = (message) => {
       break;
 
     case "request_error":
-      const msg = data.params["message"];
+      error_message = data.params["message"];
       error_message.innerHTML = msg;
       error.style.display = "block";
       console.error(`${msg}`, data.params);
