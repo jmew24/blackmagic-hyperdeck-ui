@@ -37,9 +37,9 @@ h3 {
 }
 
 .recording {
-  color: #bf0b0b;
+  color: #bf0b0b !important;
 }
 
 .playing {
-  color: #0b9d10;
+  color: #0b9d10 !important;
 }
