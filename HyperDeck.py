@@ -104,6 +104,8 @@ class HyperDeck:
     async def record(self):
         command = 'record'
         response = await self._send_command(command)
+        if (response['error'] and response['error'] == True and self._callback is not None):
+            await self._callback('error', response);
         return response and not response['error']
 
     async def record_named(self, clip_name):
@@ -120,6 +122,8 @@ class HyperDeck:
         command = 'play:\nsingle clip: {}\nloop: {}\nspeed: {}\n\n'.format(
             single, loop, int(speed)).lower()
         response = await self._send_command(command)
+        if (response['error'] and response['error'] == True and self._callback is not None):
+            await self._callback('error', response);
         return response and not response['error']
 
     async def stop(self):
@@ -166,6 +170,8 @@ class HyperDeck:
             slot = 2;
         command = 'slot select: slot id: {}'.format(slot)
         response = await self._send_command(command)
+        if (response['error'] and response['error'] == True and self._callback is not None):
+            await self._callback('error', response);
         return response and not response['error']
 
     async def dist_list(self, slot=None):
