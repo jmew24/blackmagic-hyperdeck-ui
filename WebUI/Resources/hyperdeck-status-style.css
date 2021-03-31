@@ -35,3 +35,11 @@ h3 {
   color: #e6e6e6;
   font-size: 120px;
 }
+
+.recording {
+  color: #bf0b0b;
+}
+
+.playing {
+  color: #0b9d10;
+}
