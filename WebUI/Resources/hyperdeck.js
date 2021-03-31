@@ -622,6 +622,14 @@ ws.onmessage = (message) => {
 
       break;
 
+    case "response_error":
+      const msg = data.params["lines"];
+      error_message.innerHTML = msg;
+      error.style.display = "block";
+      console.error(`${msg}`, data.params);
+
+      break;
+
     case "request_error":
       const msg = data.params["message"];
       error_message.innerHTML = msg;

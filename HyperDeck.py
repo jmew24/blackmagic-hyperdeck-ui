@@ -109,6 +109,8 @@ class HyperDeck:
     async def record_named(self, clip_name):
         command = 'record: name: {}'.format(clip_name)
         response = await self._send_command(command)
+        if (response['error'] and response['error'] == True and self._callback is not None):
+            await self._callback('error', response);
         return response and not response['error']
 
     async def play(self, single=True, loop=False, speed=1.0):

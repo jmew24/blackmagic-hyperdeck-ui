@@ -242,7 +242,8 @@ class WebUI:
             await self._hyperdeck.record()
         elif command == "record_named":
             clip_name = params.get('clip_name', '')
-            await self._hyperdeck.record_named(clip_name)
+            recordResponse = await self._hyperdeck.record_named(clip_name)
+            self.logger.info(recordResponse);
         elif command == "play":
             single = params.get('single', False)
             loop = params.get('loop', False)
@@ -315,6 +316,7 @@ class WebUI:
             'clips': self._hyperdeck_event_clips_changed,
             'status': self._hyperdeck_event_status_changed,
             'transcript': self._hyperdeck_event_transcript,
+            'error': self._hyperdeck_event_error,
         }
 
         handler = event_handlers.get(event)
@@ -358,6 +360,14 @@ class WebUI:
         # display the transcript to the user.
         message = {
             'response': 'transcript',
+            'params': params
+        }
+        await self._send_websocket_message(message)
+
+    async def _hyperdeck_event_error(self, params):
+        # Display an error to the user.
+        message = {
+            'response': 'response_error',
             'params': params
         }
         await self._send_websocket_message(message)
