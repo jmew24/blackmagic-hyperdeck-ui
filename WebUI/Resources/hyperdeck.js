@@ -53,6 +53,7 @@ let clips_data = [];
 let is_playing = false;
 let is_updating = false;
 let auto_refresh = false;
+let diskAlerted = false;
 
 const getUrlVars = () => {
   let vars = {};
@@ -529,6 +530,7 @@ ws.onmessage = (message) => {
         const paramsSent = data.params["sent"];
         const paramsReceived = data.params["received"];
         const sentMessage = paramsSent.join("\n").trim();
+        const receivedMessage = paramsReceived.join("\n").trim();
         if (sentMessage.indexOf("slot info") >= 0) {
           if (paramsReceived[0].toString().trim() == "105 no disk") {
             slot_select.selectedIndex = 0;
@@ -552,6 +554,13 @@ ws.onmessage = (message) => {
             if (slot_select.selectedIndex == slotNumber)
               slot_select.selectedIndex = 0;
           } else slot_select.options[slotNumber].disabled = false;
+        } else if (
+          !diskAlerted &&
+          (sentMessage.toLowerCase().indexOf("disk full") >= 0 ||
+            receivedMessage.toLowerCase().indexOf("disk full") >= 0)
+        ) {
+          diskAlerted = true;
+          alert("DISK FULL!");
         }
 
         if (sentMessage.indexOf("ping") >= 0) {
@@ -664,6 +673,7 @@ window.onload = () => {
   if (slotIndex.length > 0 && !slot_select.disabled)
     slot_select.selectedIndex = Number(slotIndex);
 
+  diskAlerted = false;
   speed.value = 1.0;
   speed.oninput();
   resetJog();
