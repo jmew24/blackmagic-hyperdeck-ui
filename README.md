@@ -1,3 +1,7 @@
+## Origional:
+The origional code this is based off can be found on Blackmagic's website here:
+https://www.blackmagicdesign.com/developer/product/hyperdeck
+
 ## Setup:
 
 1. Connect a Blackmagic Design HyperDeck to your computer, via an Ethernet cable.
