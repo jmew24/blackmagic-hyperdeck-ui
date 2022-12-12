@@ -128,3 +128,6 @@ dmypy.json
 
 # Mac
 .DS_Store
+
+# Login file
+login.json

@@ -1,0 +1,45 @@
+@font-face {
+  font-family: "Avenir";
+  /* src fallbacks ommitted for brevity */
+  font-weight: normal;
+  font-style: normal;
+}
+
+body {
+  background-color: #2b2b2b;
+  color: #e6e6e6e6;
+  font-size: 16px;
+  font-family: "Avenir";
+  margin: 0px;
+  padding: 0px;
+}
+
+h1 {
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+}
+
+h3 {
+  margin-top: 5px;
+  margin-bottom: 10px;
+  padding-bottom: inherit;
+}
+
+#container {
+  margin: auto;
+  width: 1300px;
+  padding: 20px;
+}
+
+#state {
+  color: #e6e6e6;
+  font-size: 120px;
+}
+
+.recording {
+  color: #bf0b0b !important;
+}
+
+.playing {
+  color: #0b9d10 !important;
+}

@@ -1,6 +1,7 @@
 import asyncio
 import logging
 
+status_timeout = 600
 
 class HyperDeck:
     logger = logging.getLogger(__name__)
@@ -11,16 +12,27 @@ class HyperDeck:
         self.clips = []
         self.status = dict()
 
+        self.do_while = False
         self._loop = loop or asyncio.get_event_loop()
         self._transport = None
         self._callback = None
         self._response_future = None
+        self._socketCount = 0
+        self._statusCount = status_timeout
+
+    def connectedSockets(self, count=0):
+        if count is not None and (type(count) == int or type(count) == float):
+            self._socketCount = count;
+        return self._socketCount
 
     def getHost(self):
         return self.host
 
     def getPort(self):
         return self.port
+
+    def hasCallback(self):
+        return False if self._callback is None else True
 
     async def setNetwork(self, host=None, port=None):
         # Update the host and/or port and re-connect to the HyperDeck
@@ -34,16 +46,25 @@ class HyperDeck:
         self.host = host
         self.port = port
 
-        await self.connect()
+        await self.reconnect(1);
 
     async def set_callback(self, callback):
         # This callback is invoked each time the HyperDeck's state changes.
         self._callback = callback
 
     async def connect(self):
-        self.logger.info('Connecting to {}:{}...'.format(self.host, self.port))
+        self.logger.info(
+            'Connecting to {}:{}...'.format(self.host, self.port))
 
         try:
+            if self._transport:
+                self._transport[1].close()
+                await self._transport[1].wait_closed()
+        except Exception as e:
+            self.logger.error("Failed to close current connection: {}".format(e))
+
+        try:
+            self.do_while = True
             self._transport = await asyncio.open_connection(host=self.host, port=self.port, loop=self._loop)
             self.logger.info('Connection established.')
 
@@ -56,7 +77,7 @@ class HyperDeck:
             self._loop.create_task(self._poll_state())
         except Exception as e:
             self.logger.error("Failed to connect: {}".format(e))
-            return None
+            return await self.reconnect(30);
 
         # Refresh our internal caches of the current HyperDeck state.
         await self.enable_notifications()
@@ -65,19 +86,33 @@ class HyperDeck:
 
         return self._transport
 
-    async def connected(self):
+    async def reconnect(self, reconnect_timer = None):
+        if (reconnect_timer == None):
+            reconnect_timer = 5 
+        self.logger.error("Reconnecting in {} second(s)".format(reconnect_timer))
+        await asyncio.sleep(reconnect_timer)
+        return await self.connect()
+
+    async def ping(self):
         command = 'ping'
         response = await self._send_command(command)
         return response and not response['error']
 
+    async def connected(self):
+        return await self.ping()
+
     async def record(self):
         command = 'record'
         response = await self._send_command(command)
+        if (response['error'] and response['error'] == True and self._callback is not None):
+            await self._callback('error', response);
         return response and not response['error']
 
     async def record_named(self, clip_name):
         command = 'record: name: {}'.format(clip_name)
         response = await self._send_command(command)
+        if (response['error'] and response['error'] == True and self._callback is not None):
+            await self._callback('error', response);
         return response and not response['error']
 
     async def play(self, single=True, loop=False, speed=1.0):
@@ -87,6 +122,8 @@ class HyperDeck:
         command = 'play:\nsingle clip: {}\nloop: {}\nspeed: {}\n\n'.format(
             single, loop, int(speed)).lower()
         response = await self._send_command(command)
+        if (response['error'] and response['error'] == True and self._callback is not None):
+            await self._callback('error', response);
         return response and not response['error']
 
     async def stop(self):
@@ -111,6 +148,44 @@ class HyperDeck:
         command = 'jog: timecode: {}'.format(timecode)
         response = await self._send_command(command)
         return response and not response['error']
+
+    async def slot_info(self, slot=None):
+        slotQuery = ''
+        if slot is None:
+            slotQuery = ''
+        elif slot <= 1:
+            slotQuery = ': slot id: 1';
+        elif slot >= 2:
+            slotQuery = ': slot id: 2';
+        command = 'slot info{}'.format(slotQuery)
+        response = await self._send_command(command)
+        return response and not response['error']
+
+    async def slot_select(self, slot=1):
+        if slot is None:
+            slot = 1;
+        elif slot <= 1:
+            slot = 1;
+        elif slot >= 2:
+            slot = 2;
+        command = 'slot select: slot id: {}'.format(slot)
+        response = await self._send_command(command)
+        if (response['error'] and response['error'] == True and self._callback is not None):
+            await self._callback('error', response);
+        return response and not response['error']
+
+    async def dist_list(self, slot=None):
+        slotQuery = ''
+        if slot is None:
+            slotQuery = ''
+        elif slot <= 1:
+            slotQuery = ': slot id: 1';
+        elif slot >= 2:
+            slotQuery = ': slot id: 2';
+        command = 'disk list{}'.format(slotQuery)
+        response = await self._send_command(command)
+        return response and not response['error']
+
 
     async def update_clips(self):
         command = 'clips get'
@@ -193,15 +268,25 @@ class HyperDeck:
         return response
 
     async def _poll_state(self):
-        while True:
-            # We have to periodically poll the HyperDeck's state, rather than
-            # bombarding it with continuous updates.
-            await asyncio.sleep(1)
+        while self.do_while:
+            try:
+                # We have to periodically poll the HyperDeck's state, rather than
+                # bombarding it with continuous updates.
+                await asyncio.sleep(1)
 
-            await self.update_status()
+                # Only send a new update if we have at least one socket connected or its been an hour
+                if self._socketCount > 0 or self._statusCount >= status_timeout:
+                    self._statusCount = 0
+                    await self.update_status()
+                else:
+                    self._statusCount = self._statusCount + 1;
+            except Exception as e:
+                self.logger.error(
+                    "_poll_state failed: {}".format(e))
+                return
 
     async def _parse_responses(self):
-        while True:
+        while self.do_while:
             try:
                 response_lines = await self._receive()
 
@@ -210,7 +295,10 @@ class HyperDeck:
                 if len(response_lines) == 0:
                     continue
             except Exception as e:
-                self.logger.error("Connection failed: {}".format(e))
+                self.do_while = False
+                self.logger.error(
+                    "Connection failed: {}".format(e))
+                await self.reconnect();
                 return
 
             try:
@@ -218,7 +306,8 @@ class HyperDeck:
                 # from the HyperDeck. Abort if we receive a malformed response.
                 response_code = int(response_lines[0].split(' ', 1)[0])
             except Exception as e:
-                self.logger.error("Malformed response: {}".format(e))
+                self.logger.error(
+                    "Malformed response: {}".format(e))
                 return
 
             # Special ranges of response codes indicates errors, or asynchronous
@@ -232,7 +321,7 @@ class HyperDeck:
             if response_code == 502:
                 # Short delay to give the HyperDeck enough time to update its
                 # internal clip state.
-                asyncio.sleep(300)
+                await asyncio.sleep(1)
 
                 # 502 Slot Info responses require us to refresh our local clip
                 # cache, since the available disk(s) have changed. Run this
@@ -274,7 +363,7 @@ class HyperDeck:
         # Multi-line responses end with a colon on the first line; we need to
         # keep reading from the device in this cause until we hit an empty line.
         if str.endswith(lines[0], ':'):
-            while True:
+            while self.do_while:
                 line = await _read_line()
                 if not len(line):
                     break
