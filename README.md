@@ -1,6 +1,6 @@
 ## Origional:
 The origional code this is based off can be found on Blackmagic's website here:
-https://www.blackmagicdesign.com/developer/product/hyperdeck
+[https://www.blackmagicdesign.com/developer/product/hyperdeck](https://web.archive.org/web/20231202021551/https://www.blackmagicdesign.com/developer/product/hyperdeck)
 
 ## Setup:
 
